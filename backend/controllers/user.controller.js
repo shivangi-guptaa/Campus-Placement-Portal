@@ -152,11 +152,12 @@ export const sendOtp = async (req, res) => {
 
     console.log(`[OTP GENERATED] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
 
-    // Trigger Real Email Delivery via Nodemailer
-    await sendOtpEmail(email, generatedOtp);
+    // Trigger Real Email Delivery via Nodemailer / Ethereal
+    const mailResult = await sendOtpEmail(email, generatedOtp);
 
     return res.status(200).json({
-      message: `6-Digit Verification OTP sent to ${email}! Please check your email inbox.`,
+      message: `6-Digit Verification OTP sent to ${email}! Check email inbox or preview link below.`,
+      previewUrl: mailResult.previewUrl,
       success: true,
     });
   } catch (error) {

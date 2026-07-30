@@ -5,12 +5,11 @@ export const sendOtpEmail = async (userEmail, otpCode) => {
     let transporter;
 
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      // Use configured Gmail / Custom SMTP
       transporter = nodemailer.createTransport({
         service: process.env.EMAIL_SERVICE || "gmail",
         auth: {
           user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS, // Gmail App Password
+          pass: process.env.EMAIL_PASS,
         },
       });
     } else {
@@ -28,7 +27,7 @@ export const sendOtpEmail = async (userEmail, otpCode) => {
     }
 
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; rounded-radius: 12px; background-color: #ffffff;">
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff;">
         <div style="text-align: center; border-bottom: 2px solid #6A38C2; padding-bottom: 15px;">
           <h2 style="color: #6A38C2; margin: 0;">SkillSync Campus Placement Portal</h2>
           <p style="color: #666; font-size: 12px; margin-top: 5px;">Official Password Reset Verification</p>
@@ -61,15 +60,14 @@ export const sendOtpEmail = async (userEmail, otpCode) => {
     const info = await transporter.sendMail(mailOptions);
     console.log(`[EMAIL SENT SUCCESS] OTP sent to: ${userEmail} | Message ID: ${info.messageId}`);
     
-    // If using Ethereal test account, print live preview URL in terminal
     const previewUrl = nodemailer.getTestMessageUrl(info);
     if (previewUrl) {
       console.log(`[EMAIL TEST PREVIEW LINK]: ${previewUrl}`);
     }
 
-    return true;
+    return { success: true, previewUrl: previewUrl || null };
   } catch (err) {
     console.error("Failed to send OTP Email:", err);
-    return false;
+    return { success: false, previewUrl: null };
   }
 };
