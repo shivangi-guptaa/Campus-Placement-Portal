@@ -51,7 +51,36 @@ erDiagram
 
 ---
 
-## 🚀 Quick Start Guide
+## 🌐 Live Production Deployment Guide
+
+### Step 1: Deploy Frontend on Vercel
+1. Go to [Vercel Dashboard](https://vercel.com/new) and click **Import Project**.
+2. Select repository `shivangi-guptaa/Campus-Placement-Portal`.
+3. Set **Root Directory**: `frontend`
+4. Set **Build Command**: `npm run build`
+5. Set **Output Directory**: `dist`
+6. Click **Deploy**. Vercel will automatically build and assign a live URL (e.g. `https://campus-placement-portal.vercel.app`).
+
+---
+
+### Step 2: Deploy Backend on Render
+1. Go to [Render Dashboard](https://dashboard.render.com/) and click **New Web Service**.
+2. Connect your GitHub repository `shivangi-guptaa/Campus-Placement-Portal`.
+3. Set **Root Directory**: `.` (or leave blank)
+4. Set **Build Command**: `npm install`
+5. Set **Start Command**: `node backend/index.js`
+6. Add Environment Variables:
+   - `PORT`: `8000`
+   - `DB_HOST`: `<Your-MySQL-Host>`
+   - `DB_USER`: `<Your-MySQL-User>`
+   - `DB_PASSWORD`: `<Your-MySQL-Password>`
+   - `DB_NAME`: `placement_portal`
+   - `JWT_SECRET`: `<Your-JWT-Secret>`
+7. Click **Create Web Service**.
+
+---
+
+## 🚀 Local Quick Start Guide
 
 ### Prerequisites
 - **Node.js**: v18 or higher
@@ -110,13 +139,6 @@ erDiagram
 ```bash
 docker-compose up --build
 ```
-
----
-
-## 🔗 Access Points & API Docs
-
-- **Web Application**: `http://localhost:5173`
-- **Swagger API Docs**: `http://localhost:8000/api-docs`
 
 ---
 

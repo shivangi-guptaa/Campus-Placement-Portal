@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: placement-portal-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node backend/index.js
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: placement_portal
+      - key: DB_PORT
+        value: 3306
+      - key: DB_DIALECT
+        value: mysql
+      - key: JWT_SECRET
+        generateValue: true
