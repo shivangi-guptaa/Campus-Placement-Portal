@@ -2,7 +2,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import React from "react";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { LogOut, User2, BarChart3, FileText, Sun, Moon, Home as HomeIcon } from "lucide-react";
+import { LogOut, User2, BarChart3, Sun, Moon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
@@ -78,17 +78,6 @@ const Navbar = () => {
                 </li>
               </>
             )}
-
-            <li>
-              <a
-                href="http://localhost:8000/api-docs"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 px-2.5 py-1 rounded border dark:border-gray-700 flex items-center gap-1"
-              >
-                <FileText className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" /> Swagger Docs
-              </a>
-            </li>
           </ul>
 
           {/* Dark Mode Toggle Button */}

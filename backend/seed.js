@@ -12,23 +12,85 @@ const seedData = async () => {
     const salt = await bcrypt.genSalt(10);
     const passHash = await bcrypt.hash("password123", salt);
 
-    // 1. Create Users (Student, Recruiter, TPO Admin)
-    const [student] = await User.findOrCreate({
-      where: { email: "student@demo.com" },
-      defaults: {
+    // 1. Create Diverse Student Users with Real CGPAs
+    const studentsData = [
+      {
         fullName: "Rahul Sharma",
         email: "student@demo.com",
         phoneNumber: "9876543210",
         password: passHash,
         role: "student",
-        degree: "MCA",
+        degree: "B.Tech",
         branch: "Computer Science",
-        cgpa: 8.5,
+        cgpa: 8.75,
         batchYear: 2026,
         backlogsCount: 0,
         bio: "Passionate Full Stack Developer & Competitive Programmer eager for campus placement opportunities.",
       },
-    });
+      {
+        fullName: "Priya Verma",
+        email: "priya@demo.com",
+        phoneNumber: "9811223344",
+        password: passHash,
+        role: "student",
+        degree: "B.Tech",
+        branch: "Information Technology",
+        cgpa: 9.12,
+        batchYear: 2026,
+        backlogsCount: 0,
+        bio: "AI/ML Enthusiast and Data Structures Ranker (NIT Bhopal).",
+      },
+      {
+        fullName: "Amit Patel",
+        email: "amit@demo.com",
+        phoneNumber: "9822334455",
+        password: passHash,
+        role: "student",
+        degree: "B.Tech",
+        branch: "Electronics & Comm",
+        cgpa: 7.60,
+        batchYear: 2026,
+        backlogsCount: 0,
+        bio: "Embedded Systems & Cloud Computing Developer.",
+      },
+      {
+        fullName: "Sneha Gupta",
+        email: "sneha@demo.com",
+        phoneNumber: "9833445566",
+        password: passHash,
+        role: "student",
+        degree: "MCA",
+        branch: "Computer Science",
+        cgpa: 8.40,
+        batchYear: 2026,
+        backlogsCount: 0,
+        bio: "Frontend React Engineer & UI/UX Specialist.",
+      },
+      {
+        fullName: "Vikram Singh",
+        email: "vikram@demo.com",
+        phoneNumber: "9844556677",
+        password: passHash,
+        role: "student",
+        degree: "B.Tech",
+        branch: "Electrical Engg",
+        cgpa: 6.85,
+        batchYear: 2026,
+        backlogsCount: 1,
+        bio: "Backend Systems Developer exploring Node.js and MySQL microservices.",
+      },
+    ];
+
+    const createdStudents = [];
+    for (const s of studentsData) {
+      const [u] = await User.findOrCreate({
+        where: { email: s.email },
+        defaults: s,
+      });
+      // Update CGPA explicitly in case record existed
+      await u.update({ cgpa: s.cgpa, branch: s.branch, degree: s.degree });
+      createdStudents.push(u);
+    }
 
     const [recruiter] = await User.findOrCreate({
       where: { email: "recruiter@demo.com" },
@@ -70,12 +132,14 @@ const seedData = async () => {
       skillObjs.push(sk);
     }
 
-    // Tag skills to student
-    for (let i = 0; i < 6; i++) {
-      await UserSkill.findOrCreate({
-        where: { userId: student.id, skillId: skillObjs[i].id },
-        defaults: { proficiency: i % 2 === 0 ? "Expert" : "Intermediate" },
-      });
+    // Tag skills to students
+    for (const stud of createdStudents) {
+      for (let i = 0; i < 5; i++) {
+        await UserSkill.findOrCreate({
+          where: { userId: stud.id, skillId: skillObjs[i].id },
+          defaults: { proficiency: i % 2 === 0 ? "Expert" : "Intermediate" },
+        });
+      }
     }
 
     // 3. Create Companies
@@ -101,7 +165,7 @@ const seedData = async () => {
         title: "Software Development Engineer - I (SDE-1)",
         description: "Join Google India's Core Engineering team working on large-scale distributed systems, search performance, and cloud microservices.",
         requirements: "Solid proficiency in Data Structures, Algorithms, JavaScript, Node.js, and MySQL. Minimum 7.5 CGPA required.",
-        salary: 18, // 18 LPA
+        salary: 18,
         location: "Bangalore",
         jobType: "Full-time",
         minCgpa: 7.5,
@@ -115,7 +179,7 @@ const seedData = async () => {
         title: "Frontend React Developer (Campus Internship)",
         description: "6-month campus internship with PPO conversion. Build high performance web applications using React, Redux Toolkit, and Tailwind CSS.",
         requirements: "Hands-on experience with React, JavaScript, CSS, HTML. Minimum 6.5 CGPA.",
-        salary: 4, // 4 LPA / Stipend 35k/mo
+        salary: 4,
         location: "Hyderabad",
         jobType: "Internship",
         minCgpa: 6.5,
@@ -129,7 +193,7 @@ const seedData = async () => {
         title: "Full Stack Engineer (MERN / MySQL)",
         description: "Build robust full-stack features for Zomato's merchant and customer platform. Opportunity to scale APIs handling millions of requests.",
         requirements: "Strong background in React, Node.js, Express, and Relational Databases (MySQL). Minimum 7.0 CGPA.",
-        salary: 14, // 14 LPA
+        salary: 14,
         location: "Gurugram",
         jobType: "PPO",
         minCgpa: 7.0,
@@ -158,22 +222,26 @@ const seedData = async () => {
         }
       }
 
-      // Seed application
-      await Application.findOrCreate({
-        where: { jobId: driveObj.id, applicantId: student.id },
-        defaults: {
-          status: "shortlisted",
-          coverLetter: "Extremely excited about this opportunity! I have strong proficiency in React and Node.js.",
-        },
-      });
+      // Seed applications
+      for (const stud of createdStudents.slice(0, 3)) {
+        await Application.findOrCreate({
+          where: { jobId: driveObj.id, applicantId: stud.id },
+          defaults: {
+            status: "shortlisted",
+            coverLetter: "Extremely excited about this opportunity! I have strong proficiency in React and Node.js.",
+          },
+        });
+      }
     }
 
     console.log("Database Seeded Successfully!");
     console.log("-----------------------------------------");
-    console.log("Demo Credentials:");
-    console.log("Student Account:    student@demo.com   | Password: password123");
-    console.log("Recruiter Account:  recruiter@demo.com | Password: password123");
-    console.log("TPO Admin Account:  tpo@demo.com       | Password: password123");
+    console.log("Demo Student Accounts with Diverse CGPAs:");
+    console.log("1. Rahul Sharma (student@demo.com) | CGPA: 8.75");
+    console.log("2. Priya Verma  (priya@demo.com)   | CGPA: 9.12");
+    console.log("3. Amit Patel   (amit@demo.com)    | CGPA: 7.60");
+    console.log("4. Sneha Gupta  (sneha@demo.com)   | CGPA: 8.40");
+    console.log("5. Vikram Singh (vikram@demo.com)  | CGPA: 6.85");
     console.log("-----------------------------------------");
     process.exit(0);
   } catch (err) {

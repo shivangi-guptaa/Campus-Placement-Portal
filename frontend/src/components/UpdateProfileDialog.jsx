@@ -9,7 +9,7 @@ import {
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileText, Image as ImageIcon } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { USER_API_END_POINT } from "@/utils/constants";
 import toast from "react-hot-toast";
@@ -21,11 +21,15 @@ const UpdateProfileDialog = ({ edit, setEdit }) => {
   const { user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
 
+  const userSkillsStr = Array.isArray(user?.skills)
+    ? user.skills.map((s) => (typeof s === "string" ? s : s.name)).join(", ")
+    : user?.profile?.skills?.join(", ") || "";
+
   const [input, setInput] = useState({
-    bio: user?.profile?.bio,
-    skills: user?.profile?.skills?.map((skill) => skill),
-    file: user?.profile?.resume,
-    profilePhoto: user?.profile?.profilePhoto || null,
+    bio: user?.bio || user?.profile?.bio || "",
+    skills: userSkillsStr,
+    file: null,
+    profilePhoto: null,
   });
 
   const changeEventHandler = (e) => {
@@ -45,7 +49,6 @@ const UpdateProfileDialog = ({ edit, setEdit }) => {
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    // we send as a form data since file is being uploaded
     const formData = new FormData();
     formData.append("bio", input.bio);
     formData.append("skills", input.skills);
@@ -53,10 +56,9 @@ const UpdateProfileDialog = ({ edit, setEdit }) => {
       formData.append("file", input.file);
     }
     if (input.profilePhoto) {
-      formData.append("profilePhoto", input.profilePhoto); // ✅ new field
+      formData.append("profilePhoto", input.profilePhoto);
     }
 
-    // api call
     try {
       setLoading(true);
       const res = await axios.put(
@@ -76,84 +78,93 @@ const UpdateProfileDialog = ({ edit, setEdit }) => {
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Profile update failed");
     } finally {
       setEdit(false);
       setLoading(false);
     }
-    console.log(input);
   };
 
   return (
-    <div>
-      <Dialog open={edit}>
-        <DialogContent
-          className="flex flex-col gap-6 sm:w-[425px]"
-          onInteractOutside={() => setEdit(false)}
-        >
-          <DialogHeader>
-            <DialogTitle className="font-medium text-xl">
-              Update profile
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={submitHandler}>
-            <div className="flex flex-col">
-              <div className="flex flex-col gap-2 my-2">
-                <Label className="font-medium text-lg">Bio</Label>
-                <Input
-                  id="bio"
-                  name="bio"
-                  type="text"
-                  value={input.bio}
-                  onChange={changeEventHandler}
-                />
-              </div>
-              <div className="flex flex-col gap-2 my-2">
-                <Label className="font-medium text-lg">Skills</Label>
-                <Input
-                  id="skills"
-                  name="skills"
-                  type="text"
-                  value={input.skills}
-                  onChange={changeEventHandler}
-                />
-              </div>
-              <div className="flex flex-col gap-2 my-2">
-                <Label className="font-medium text-lg">Resume</Label>
-                <Input
-                  id="file"
-                  name="file"
-                  type="file"
-                  accept="image/*"
-                  onChange={changeFileHandler}
-                />
-              </div>
-              <div className="flex flex-col gap-2 my-2">
-                <Label className="font-medium text-lg">Profile Photo</Label>
-                <Input
-                  id="profilePhoto"
-                  name="profilePhoto"
-                  type="file"
-                  accept="image/*"
-                  onChange={changePhotoHandler}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              {loading ? (
-                <Button className="w-full my-4">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
-                </Button>
-              ) : (
-                <Button type="submit" className="w-full my-4">
-                  Update
-                </Button>
-              )}
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
+    <Dialog open={edit} onOpenChange={setEdit}>
+      <DialogContent
+        className="flex flex-col gap-5 sm:w-[450px] dark:bg-gray-900 dark:border-gray-800 dark:text-white rounded-3xl"
+      >
+        <DialogHeader>
+          <DialogTitle className="font-bold text-xl text-gray-900 dark:text-white">
+            Update Profile Information
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={submitHandler} className="space-y-4">
+          <div className="space-y-1">
+            <Label className="text-xs font-bold text-gray-700 dark:text-gray-300">Bio</Label>
+            <Input
+              id="bio"
+              name="bio"
+              type="text"
+              value={input.bio}
+              onChange={changeEventHandler}
+              placeholder="e.g. 4th year CSE student passionate about Full Stack & Cloud"
+              className="dark:bg-gray-800 dark:border-gray-700 dark:text-white rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-bold text-gray-700 dark:text-gray-300">Skills (Comma Separated)</Label>
+            <Input
+              id="skills"
+              name="skills"
+              type="text"
+              value={input.skills}
+              onChange={changeEventHandler}
+              placeholder="e.g. React, Node.js, MySQL, Python"
+              className="dark:bg-gray-800 dark:border-gray-700 dark:text-white rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Resume PDF (Upload PDF Only)
+            </Label>
+            <Input
+              id="file"
+              name="file"
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={changeFileHandler}
+              className="dark:bg-gray-800 dark:border-gray-700 dark:text-white text-xs cursor-pointer rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Profile Photo (PNG / JPG)
+            </Label>
+            <Input
+              id="profilePhoto"
+              name="profilePhoto"
+              type="file"
+              accept="image/*"
+              onChange={changePhotoHandler}
+              className="dark:bg-gray-800 dark:border-gray-700 dark:text-white text-xs cursor-pointer rounded-xl"
+            />
+          </div>
+
+          <DialogFooter className="pt-2">
+            {loading ? (
+              <Button disabled className="w-full bg-[#6A38C2] text-white rounded-xl">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving Changes...
+              </Button>
+            ) : (
+              <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5B30A6] text-white font-bold rounded-xl">
+                Save Profile
+              </Button>
+            )}
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

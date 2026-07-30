@@ -36,7 +36,7 @@ const Profile = () => {
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 max-w-lg">{userBio}</p>
               <div className="flex items-center gap-4 mt-2 text-xs font-semibold text-purple-700 dark:text-purple-300">
                 <span className="flex items-center gap-1 bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
-                  <GraduationCap className="w-3.5 h-3.5" /> CGPA: {user?.cgpa || 8.0}
+                  <GraduationCap className="w-3.5 h-3.5" /> CGPA: {user?.cgpa || "8.5"}
                 </span>
                 <span className="bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
                   Batch: {user?.batchYear || 2026}
