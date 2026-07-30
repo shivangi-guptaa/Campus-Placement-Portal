@@ -43,7 +43,6 @@ export const register = async (req, res) => {
       profilePhoto: photoUrl,
     });
 
-    // Tag skills if provided
     if (skills) {
       const skillNames = String(skills).split(",").map((s) => s.trim()).filter(Boolean);
       for (const sName of skillNames) {
@@ -133,6 +132,41 @@ export const login = async (req, res) => {
   }
 };
 
+export const forgotPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+  try {
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Email and new password are required", success: false });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email address", success: false });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+
+    await logAuditTrail({
+      userId: user.id,
+      action: "PASSWORD_RESET",
+      entity: "User",
+      entityId: user.id,
+      req,
+    });
+
+    return res.status(200).json({
+      message: "Password reset successfully! You can now login with your new password.",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
 export const logout = async (req, res) => {
   try {
     if (req.user) {
@@ -199,7 +233,6 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
 
-    // Update Skills
     if (skills) {
       const sNames = String(skills).split(",").map((s) => s.trim()).filter(Boolean);
       await UserSkill.destroy({ where: { userId: user.id } });

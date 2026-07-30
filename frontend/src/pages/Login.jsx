@@ -9,7 +9,7 @@ import { USER_API_END_POINT } from "@/utils/constants";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setUser } from "@/redux/authSlice";
-import { Loader2, Mail, Lock, ShieldCheck } from "lucide-react";
+import { Loader2, Mail, Lock, ShieldCheck, Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const [inputData, setInputData] = useState({
@@ -17,6 +17,7 @@ const Login = () => {
     password: "",
     role: "student",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -66,12 +67,12 @@ const Login = () => {
       <div className="flex items-center justify-center max-w-7xl mx-auto px-4 mt-8">
         <form
           onSubmit={submitHandler}
-          className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm space-y-4"
+          className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-sm space-y-4"
         >
           <div>
             <h1 className="text-2xl font-black text-gray-900 dark:text-white">Welcome Back</h1>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Login to SkillSync Placement & Internship Portal
+              Sign in to SkillSync Placement & Internship Portal
             </p>
           </div>
 
@@ -85,24 +86,38 @@ const Login = () => {
               name="email"
               onChange={changeEventHandler}
               placeholder="e.g. student@demo.com"
-              className="dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
+              className="dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500 rounded-xl"
               required
             />
           </div>
 
           <div className="space-y-1">
-            <Label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Password
-            </Label>
-            <Input
-              type="password"
-              value={inputData.password}
-              name="password"
-              onChange={changeEventHandler}
-              placeholder="••••••••"
-              className="dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
-              required
-            />
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Password
+              </Label>
+              <Link to="/forgot-password" className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline">
+                Forgot Password?
+              </Link>
+            </div>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={inputData.password}
+                name="password"
+                onChange={changeEventHandler}
+                placeholder="••••••••"
+                className="dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500 rounded-xl pr-10"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-1 pt-1">
@@ -111,7 +126,7 @@ const Login = () => {
             </Label>
             <div className="grid grid-cols-2 gap-3 pt-1">
               <label
-                className={`flex items-center justify-center p-3 rounded-lg border text-sm font-semibold cursor-pointer transition-all ${
+                className={`flex items-center justify-center p-3 rounded-xl border text-sm font-semibold cursor-pointer transition-all ${
                   inputData.role === "student"
                     ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500"
                     : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
@@ -129,7 +144,7 @@ const Login = () => {
               </label>
 
               <label
-                className={`flex items-center justify-center p-3 rounded-lg border text-sm font-semibold cursor-pointer transition-all ${
+                className={`flex items-center justify-center p-3 rounded-xl border text-sm font-semibold cursor-pointer transition-all ${
                   inputData.role === "recruiter"
                     ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500"
                     : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
@@ -149,12 +164,12 @@ const Login = () => {
           </div>
 
           {loading ? (
-            <Button disabled className="w-full bg-[#6A38C2] text-white">
+            <Button disabled className="w-full bg-[#6A38C2] text-white rounded-xl">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging In...
             </Button>
           ) : (
-            <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5B30A6] text-white font-semibold">
-              Login to Account
+            <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5B30A6] text-white font-semibold rounded-xl">
+              Sign In to Account
             </Button>
           )}
 
@@ -162,7 +177,7 @@ const Login = () => {
             <span className="text-xs text-gray-500 dark:text-gray-400">
               Don't have an account?{" "}
               <Link to="/register" className="text-purple-600 dark:text-purple-400 font-bold hover:underline">
-                Register here
+                Create Account
               </Link>
             </span>
           </div>
