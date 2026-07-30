@@ -142,7 +142,6 @@ export const sendOtp = async (req, res) => {
       return res.status(400).json({ message: "Email is required", success: false });
     }
 
-    // Find existing user or auto-initialize account for any requested email
     let user = await User.findOne({ where: { email } });
     if (!user) {
       const defaultName = email.split("@")[0].replace(/[^a-zA-Z]/g, " ") || "Student User";
@@ -165,14 +164,11 @@ export const sendOtp = async (req, res) => {
     const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
     otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
 
-    console.log(`[OTP GENERATED] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
-
-    // Trigger Real Email Delivery via Nodemailer / Ethereal
-    const mailResult = await sendOtpEmail(email, generatedOtp);
+    // Send Real Email Delivery via Nodemailer securely to registered email
+    await sendOtpEmail(email, generatedOtp);
 
     return res.status(200).json({
-      message: `6-Digit Verification OTP sent to ${email}! Check email inbox or test preview link.`,
-      previewUrl: mailResult.previewUrl,
+      message: `6-Digit Verification OTP sent to ${email}! Please check your email inbox.`,
       success: true,
     });
   } catch (error) {
@@ -190,7 +186,7 @@ export const resetPasswordOtp = async (req, res) => {
 
     const record = otpStore.get(email);
     if (!record || record.otp !== String(otp).trim()) {
-      return res.status(400).json({ message: "Invalid 6-digit OTP code. Please enter valid OTP.", success: false });
+      return res.status(400).json({ message: "Invalid 6-digit OTP code. Please check your email.", success: false });
     }
 
     if (Date.now() > record.expiresAt) {

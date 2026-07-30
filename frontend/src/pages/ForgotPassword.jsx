@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
-import { Loader2, Mail, Lock, KeyRound, ArrowLeft, Eye, EyeOff, ShieldCheck, Send, ExternalLink, MailCheck } from "lucide-react";
+import { Loader2, Mail, Lock, KeyRound, ArrowLeft, Eye, EyeOff, ShieldCheck, Send } from "lucide-react";
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
@@ -17,7 +17,8 @@ const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(null);
+
+  const navigate = useNavigate();
 
   // Step 1: Request 6-digit Verification OTP
   const handleSendOtp = async (e) => {
@@ -32,10 +33,7 @@ const ForgotPassword = () => {
       const res = await axios.post(`${USER_API_END_POINT}/send-otp`, { email });
 
       if (res.data.success) {
-        toast.success(res.data.message || "6-Digit OTP sent!");
-        if (res.data.previewUrl) {
-          setPreviewUrl(res.data.previewUrl);
-        }
+        toast.success(res.data.message || `6-Digit OTP sent to ${email}!`);
         setOtp("");
         setStep(2);
       }
@@ -84,8 +82,6 @@ const ForgotPassword = () => {
       setLoading(false);
     }
   };
-
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors pb-12">
@@ -139,26 +135,6 @@ const ForgotPassword = () => {
             </form>
           ) : (
             <form onSubmit={handleResetPasswordWithOtp} className="space-y-4">
-              {/* Option B: Live Test Email Inbox Preview Link */}
-              {previewUrl && (
-                <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 space-y-2 text-xs">
-                  <div className="flex items-center gap-2 font-bold text-purple-800 dark:text-purple-300">
-                    <MailCheck className="w-4 h-4 text-purple-600" /> Ethereal Test Email Delivered!
-                  </div>
-                  <p className="text-purple-700 dark:text-purple-400">
-                    Open your simulated test inbox below to view the delivered email & 6-digit OTP code:
-                  </p>
-                  <a
-                    href={previewUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 font-bold text-white bg-purple-600 hover:bg-purple-700 px-3 py-1.5 rounded-xl shadow-sm transition-all text-xs"
-                  >
-                    📩 Open Test Email Inbox <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              )}
-
               <div className="space-y-1">
                 <Label className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5" /> Enter 6-Digit OTP Code*
