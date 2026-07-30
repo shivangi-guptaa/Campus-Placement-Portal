@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { User, Skill, UserSkill } from "../models/index.js";
 import { uploadFile } from "../utils/upload.js";
 import { logAuditTrail } from "../utils/auditLogger.js";
+import { sendOtpEmail } from "../utils/emailService.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwtkey123";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "supersecretrefreshkey456";
@@ -151,8 +152,11 @@ export const sendOtp = async (req, res) => {
 
     console.log(`[OTP GENERATED] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
 
+    // Trigger Real Email Delivery via Nodemailer
+    await sendOtpEmail(email, generatedOtp);
+
     return res.status(200).json({
-      message: "6-Digit Verification OTP sent to your registered email address!",
+      message: `6-Digit Verification OTP sent to ${email}! Please check your email inbox.`,
       success: true,
     });
   } catch (error) {
