@@ -7,6 +7,8 @@ import { logAuditTrail } from "../utils/auditLogger.js";
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwtkey123";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "supersecretrefreshkey456";
 
+const otpStore = new Map();
+
 export const register = async (req, res) => {
   const { fullName, email, phoneNumber, password, role, degree, branch, cgpa, batchYear, skills } = req.body;
   const file = req.file;
@@ -128,6 +130,79 @@ export const login = async (req, res) => {
       });
   } catch (error) {
     console.error("Login Error:", error);
+    res.status(500).json({ message: error.message || "Internal server error", success: false });
+  }
+};
+
+export const sendOtp = async (req, res) => {
+  const { email } = req.body;
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Email is required", success: false });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "No registered account found with this email address", success: false });
+    }
+
+    const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
+    otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
+
+    return res.status(200).json({
+      message: `6-Digit OTP generated! Demo OTP Code: ${generatedOtp}`,
+      otp: generatedOtp,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Send OTP Error:", error);
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
+export const resetPasswordOtp = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  try {
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: "Email, OTP, and new password are required", success: false });
+    }
+
+    const record = otpStore.get(email);
+    if (!record || record.otp !== String(otp).trim()) {
+      return res.status(400).json({ message: "Invalid 6-digit OTP code. Please enter valid OTP.", success: false });
+    }
+
+    if (Date.now() > record.expiresAt) {
+      otpStore.delete(email);
+      return res.status(400).json({ message: "OTP has expired. Please request a new OTP.", success: false });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: "User account not found", success: false });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+
+    otpStore.delete(email);
+
+    await logAuditTrail({
+      userId: user.id,
+      action: "PASSWORD_RESET_OTP",
+      entity: "User",
+      entityId: user.id,
+      req,
+    });
+
+    return res.status(200).json({
+      message: "Password reset successfully! Please sign in with your new password.",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Reset Password OTP Error:", error);
     res.status(500).json({ message: "Internal server error", success: false });
   }
 };

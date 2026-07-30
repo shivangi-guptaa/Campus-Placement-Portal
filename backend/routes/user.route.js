@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, logout, checkUser, updateProfile, forgotPassword } from "../controllers/user.controller.js";
+import { register, login, logout, checkUser, updateProfile, forgotPassword, sendOtp, resetPasswordOtp } from "../controllers/user.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import { singleUpload, multipleUpload } from "../middlewares/multer.middleware.js";
 
@@ -8,7 +8,9 @@ const router = express.Router();
 router.post("/register", singleUpload, register);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
-router.get("/logout", logout); // ✅ Allow logout without mandatory auth token to prevent 401 loops
+router.post("/send-otp", sendOtp);
+router.post("/reset-password-otp", resetPasswordOtp);
+router.get("/logout", logout);
 router.get("/check", protect, checkUser);
 router.put(
   "/update-profile",
