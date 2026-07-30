@@ -9,7 +9,7 @@ import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
-import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, CheckCircle2, Circle, FileText, X, PartyPopper, RefreshCw, ExternalLink } from "lucide-react";
+import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, CheckCircle2, Circle, FileText, X, PartyPopper, RefreshCw } from "lucide-react";
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -30,7 +30,6 @@ const Register = () => {
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [resendingOtp, setResendingOtp] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
-  const [previewUrl, setPreviewUrl] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -83,7 +82,6 @@ const Register = () => {
       if (res.data.success) {
         toast.success(res.data.message);
         setRegisteredEmail(inputData.email);
-        if (res.data.previewUrl) setPreviewUrl(res.data.previewUrl);
         setShowOtpModal(true);
       }
     } catch (error) {
@@ -130,7 +128,6 @@ const Register = () => {
 
       if (res.data.success) {
         toast.success(res.data.message);
-        if (res.data.previewUrl) setPreviewUrl(res.data.previewUrl);
       }
     } catch (error) {
       console.log(error);
@@ -158,21 +155,6 @@ const Register = () => {
                 A 6-digit verification OTP has been sent to <span className="font-bold text-purple-600">{registeredEmail}</span>
               </p>
             </div>
-
-            {/* Test Email Link if SMTP not configured */}
-            {previewUrl && (
-              <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-xs text-left space-y-1">
-                <p className="text-purple-800 dark:text-purple-300 font-bold">📩 Test Mode Ethereal Inbox Link:</p>
-                <a
-                  href={previewUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 font-bold text-purple-600 dark:text-purple-400 hover:underline"
-                >
-                  View Delivered Verification Email <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-            )}
 
             <form onSubmit={handleVerifyRegistrationOtp} className="space-y-4 pt-1">
               <div className="space-y-1 text-left">

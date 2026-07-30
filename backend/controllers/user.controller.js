@@ -19,11 +19,6 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Required fields missing", success: false });
     }
 
-    const existingUser = await User.findOne({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: "User with this email already exists", success: false });
-    }
-
     let photoUrl = "";
     if (file) {
       const uploadRes = await uploadFile(file, "profiles");
@@ -33,26 +28,44 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = await User.create({
-      fullName,
-      email,
-      phoneNumber,
-      password: hashedPassword,
-      role,
-      degree: degree || "MCA",
-      branch: branch || "Computer Science",
-      cgpa: cgpa ? parseFloat(cgpa) : 8.0,
-      batchYear: batchYear ? parseInt(batchYear) : 2026,
-      profilePhoto: photoUrl,
-    });
+    let user = await User.findOne({ where: { email } });
+    if (user) {
+      // Update existing record if re-registering
+      await user.update({
+        fullName,
+        phoneNumber,
+        password: hashedPassword,
+        role,
+        degree: degree || "MCA",
+        branch: branch || "Computer Science",
+        cgpa: cgpa ? parseFloat(cgpa) : 8.0,
+        batchYear: batchYear ? parseInt(batchYear) : 2026,
+        profilePhoto: photoUrl || user.profilePhoto,
+      });
+    } else {
+      user = await User.create({
+        fullName,
+        email,
+        phoneNumber,
+        password: hashedPassword,
+        role,
+        degree: degree || "MCA",
+        branch: branch || "Computer Science",
+        cgpa: cgpa ? parseFloat(cgpa) : 8.0,
+        batchYear: batchYear ? parseInt(batchYear) : 2026,
+        profilePhoto: photoUrl,
+      });
+    }
 
     if (skills) {
       const skillNames = String(skills).split(",").map((s) => s.trim()).filter(Boolean);
+      await UserSkill.destroy({ where: { userId: user.id } });
       for (const sName of skillNames) {
         const [skillObj] = await Skill.findOrCreate({ where: { name: sName } });
-        await UserSkill.findOrCreate({
-          where: { userId: newUser.id, skillId: skillObj.id },
-          defaults: { proficiency: "Intermediate" },
+        await UserSkill.create({
+          userId: user.id,
+          skillId: skillObj.id,
+          proficiency: "Intermediate",
         });
       }
     }
@@ -62,19 +75,18 @@ export const register = async (req, res) => {
     otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
     
     console.log(`[REGISTRATION OTP] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
-    const mailRes = await sendOtpEmail(email, generatedOtp);
+    await sendOtpEmail(email, generatedOtp);
 
     await logAuditTrail({
-      userId: newUser.id,
+      userId: user.id,
       action: "USER_REGISTERED",
       entity: "User",
-      entityId: newUser.id,
+      entityId: user.id,
       req,
     });
 
     res.status(201).json({
-      message: `Registration successful! 6-Digit Verification OTP sent to ${email}`,
-      previewUrl: mailRes?.previewUrl || null,
+      message: `Account created successfully! 6-Digit Verification OTP sent to ${email}`,
       success: true,
       email,
     });
@@ -98,7 +110,7 @@ export const verifyRegistrationOtp = async (req, res) => {
 
     if (Date.now() > record.expiresAt) {
       otpStore.delete(email);
-      return res.status(400).json({ message: "OTP has expired. Please request a new code.", success: false });
+      return res.status(400).json({ message: "OTP has expired. Please click Resend OTP.", success: false });
     }
 
     otpStore.delete(email);
@@ -124,11 +136,10 @@ export const resendRegistrationOtp = async (req, res) => {
     otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
 
     console.log(`[RESEND REGISTRATION OTP] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
-    const mailRes = await sendOtpEmail(email, generatedOtp);
+    await sendOtpEmail(email, generatedOtp);
 
     return res.status(200).json({
       message: `A fresh 6-digit verification OTP has been sent to ${email}`,
-      previewUrl: mailRes?.previewUrl || null,
       success: true,
     });
   } catch (error) {
@@ -231,11 +242,10 @@ export const sendOtp = async (req, res) => {
 
     console.log(`[OTP GENERATED] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
 
-    const mailRes = await sendOtpEmail(email, generatedOtp);
+    await sendOtpEmail(email, generatedOtp);
 
     return res.status(200).json({
       message: `6-Digit Verification OTP sent to ${email}! Please check your email inbox.`,
-      previewUrl: mailRes?.previewUrl || null,
       success: true,
     });
   } catch (error) {

@@ -2,72 +2,60 @@ import nodemailer from "nodemailer";
 
 export const sendOtpEmail = async (userEmail, otpCode) => {
   try {
-    let transporter;
+    const user = process.env.EMAIL_USER || "reachshivangigupta@gmail.com";
+    const pass = process.env.EMAIL_PASS || "";
 
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      transporter = nodemailer.createTransport({
-        service: process.env.EMAIL_SERVICE || "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-    } else {
-      // Create auto test account on Ethereal Email
-      const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        },
-      });
-    }
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: user,
+        pass: pass,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
 
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff;">
-        <div style="text-align: center; border-bottom: 2px solid #6A38C2; padding-bottom: 15px;">
-          <h2 style="color: #6A38C2; margin: 0;">SkillSync Campus Placement Portal</h2>
-          <p style="color: #666; font-size: 12px; margin-top: 5px;">Official Password Reset Verification</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+        <div style="text-align: center; border-bottom: 2px solid #6A38C2; padding-bottom: 16px; margin-bottom: 20px;">
+          <h2 style="color: #6A38C2; margin: 0; font-size: 24px; font-weight: 800;">SkillSync Campus Placement Portal</h2>
+          <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Official Account & Security Verification</p>
         </div>
         
-        <div style="padding: 20px 0;">
-          <h3 style="color: #333;">Password Reset Request</h3>
-          <p style="color: #555; font-size: 14px;">We received a request to reset your SkillSync account password. Use the following 6-digit OTP code to complete your password reset:</p>
+        <div style="padding: 10px 0;">
+          <h3 style="color: #1e293b; margin-top: 0;">Verification Required</h3>
+          <p style="color: #475569; font-size: 14px; line-height: 1.6;">Use the following 6-digit OTP code to verify your email address and complete your request:</p>
           
-          <div style="background-color: #F3E8FF; border: 1px dashed #6A38C2; padding: 15px; text-align: center; margin: 20px 0; border-radius: 10px;">
-            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #6A38C2;">${otpCode}</span>
+          <div style="background-color: #F3E8FF; border: 2px dashed #6A38C2; padding: 18px; text-align: center; margin: 24px 0; border-radius: 12px;">
+            <span style="font-size: 36px; font-weight: 900; letter-spacing: 8px; color: #6A38C2;">${otpCode}</span>
           </div>
 
-          <p style="color: #777; font-size: 12px;">This OTP is valid for 10 minutes. If you did not request a password reset, please ignore this email.</p>
+          <p style="color: #94a3b8; font-size: 12px; line-height: 1.5;">This OTP code is confidential and valid for 10 minutes. Please do not share it with anyone.</p>
         </div>
 
-        <div style="border-top: 1px solid #eeeeee; padding-top: 15px; text-align: center; color: #999; font-size: 11px;">
+        <div style="border-top: 1px solid #f1f5f9; padding-top: 16px; text-align: center; color: #94a3b8; font-size: 12px;">
           &copy; 2026 SkillSync Campus Placement Portal. Shivangi Gupta (NIT Bhopal).
         </div>
       </div>
     `;
 
     const mailOptions = {
-      from: `"SkillSync Placement Portal" <${process.env.EMAIL_USER || "no-reply@skillsync.edu"}>`,
+      from: `"SkillSync Verification" <${user}>`,
       to: userEmail,
-      subject: `🔑 ${otpCode} is your SkillSync Account Password Reset OTP`,
+      subject: `🔑 ${otpCode} is your SkillSync Verification Code`,
       html: htmlContent,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL SENT SUCCESS] OTP sent to: ${userEmail} | Message ID: ${info.messageId}`);
-    
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log(`[EMAIL TEST PREVIEW LINK]: ${previewUrl}`);
-    }
+    console.log(`[REAL EMAIL DELIVERED] OTP sent to: ${userEmail} | MessageID: ${info.messageId}`);
 
-    return { success: true, previewUrl: previewUrl || null };
+    return { success: true };
   } catch (err) {
-    console.error("Failed to send OTP Email:", err);
-    return { success: false, previewUrl: null };
+    console.error("Email Delivery Error:", err.message);
+    return { success: false };
   }
 };
