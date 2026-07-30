@@ -7,12 +7,12 @@ const PrivateRoute = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user === null || user.role !== "student") {
-      navigate("/");
+    if (!user) {
+      navigate("/login");
     }
-  }, []);
+  }, [user, navigate]);
 
-  return <>{children}</>;
+  return <>{user ? children : null}</>;
 };
 
 export default PrivateRoute;
