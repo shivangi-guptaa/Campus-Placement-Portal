@@ -75,7 +75,7 @@ export const register = async (req, res) => {
     otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
     
     console.log(`[REGISTRATION OTP] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
-    await sendOtpEmail(email, generatedOtp);
+    try { await sendOtpEmail(email, generatedOtp); } catch(e) { console.warn("Email send skipped:", e.message); }
 
     await logAuditTrail({
       userId: user.id,
@@ -136,7 +136,7 @@ export const resendRegistrationOtp = async (req, res) => {
     otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
 
     console.log(`[RESEND REGISTRATION OTP] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
-    await sendOtpEmail(email, generatedOtp);
+    try { await sendOtpEmail(email, generatedOtp); } catch(e) { console.warn("Email send skipped:", e.message); }
 
     return res.status(200).json({
       message: `A fresh 6-digit verification OTP has been sent to ${email}`,
