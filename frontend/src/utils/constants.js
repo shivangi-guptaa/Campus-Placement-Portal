@@ -1,4 +1,11 @@
-export const BASE_URL = import.meta.env.VITE_BACKEND_URL || "https://campus-placement-portal-f3ot.onrender.com/api";
+const isLocalhost = typeof window !== "undefined" && Boolean(
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  window.location.hostname === "[::1]"
+);
+
+export const BASE_URL = import.meta.env.VITE_BACKEND_URL || (isLocalhost ? "http://localhost:8000/api" : "https://campus-placement-portal-f3ot.onrender.com/api");
+
 export const USER_API_END_POINT = `${BASE_URL}/user`;
 export const JOB_API_END_POINT = `${BASE_URL}/job`;
 export const APPLICATION_API_END_POINT = `${BASE_URL}/application`;

@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/register", singleUpload, register);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
-router.get("/logout", protect, logout);
+router.get("/logout", logout); // ✅ Allow logout without mandatory auth token to prevent 401 loops
 router.get("/check", protect, checkUser);
 router.put(
   "/update-profile",
