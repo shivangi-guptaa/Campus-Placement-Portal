@@ -9,7 +9,7 @@ import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
-import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, CheckCircle2, Circle, FileText, X } from "lucide-react";
+import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, CheckCircle2, Circle, FileText, X, PartyPopper } from "lucide-react";
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -23,12 +23,17 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
+  
+  // Verification OTP Modal state
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading } = useSelector((store) => store.auth);
 
-  // Password validation rules
   const pwd = inputData.password;
   const passRules = {
     length: pwd.length >= 8,
@@ -74,8 +79,9 @@ const Register = () => {
       });
 
       if (res.data.success) {
-        navigate("/login");
         toast.success(res.data.message);
+        setRegisteredEmail(inputData.email);
+        setShowOtpModal(true); // Open OTP verification modal!
       }
     } catch (error) {
       console.log("Error in Register", error);
@@ -85,9 +91,81 @@ const Register = () => {
     }
   };
 
+  const handleVerifyRegistrationOtp = async (e) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.length < 6) {
+      toast.error("Please enter the 6-digit verification OTP code");
+      return;
+    }
+
+    try {
+      setVerifyingOtp(true);
+      const res = await axios.post(`${USER_API_END_POINT}/verify-registration-otp`, {
+        email: registeredEmail,
+        otp: otpCode,
+      });
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        setShowOtpModal(false);
+        navigate("/login");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Invalid OTP verification code");
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors pb-12">
       <Navbar />
+
+      {/* Account Verification OTP Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative space-y-4 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+              <PartyPopper className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h3 className="font-extrabold text-xl text-gray-900 dark:text-white">Verify Your Email Address</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                A 6-digit verification OTP has been sent to <span className="font-bold text-purple-600">{registeredEmail}</span>
+              </p>
+            </div>
+
+            <form onSubmit={handleVerifyRegistrationOtp} className="space-y-4 pt-2">
+              <div className="space-y-1 text-left">
+                <Label className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" /> 6-Digit Verification OTP Code*
+                </Label>
+                <Input
+                  type="text"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  placeholder="• • • • • •"
+                  maxLength={6}
+                  className="dark:bg-gray-800 dark:border-gray-700 dark:text-white font-mono tracking-widest text-center text-lg font-bold rounded-xl border-purple-500"
+                  required
+                />
+              </div>
+
+              {verifyingOtp ? (
+                <Button disabled className="w-full bg-[#6A38C2] text-white rounded-xl">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying Account...
+                </Button>
+              ) : (
+                <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5B30A6] text-white font-bold rounded-xl">
+                  Verify Account & Sign In
+                </Button>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Rules Modal */}
       {showRulesModal && (
@@ -203,7 +281,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Password Strength Validation Box */}
           <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 space-y-2 text-xs">
             <span className="font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider block text-[10px]">
               PASSWORD MUST CONTAIN:
@@ -228,7 +305,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* PDF Resume Uploader Option */}
           {inputData.role === "student" && (
             <div className="space-y-1">
               <Label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
@@ -238,7 +314,7 @@ const Register = () => {
                 type="file"
                 accept="application/pdf,.pdf"
                 onChange={changeFileHandler}
-                className="dark:bg-gray-800 dark:border-gray-700 text-xs dark:text-white cursor-pointer rounded-xl"
+                className="dark:bg-gray-800 dark:border-gray-700 dark:text-white text-xs cursor-pointer rounded-xl"
               />
             </div>
           )}
@@ -286,7 +362,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Mandatory Checkbox & Rules Modal Link */}
           <div className="flex items-start gap-2 pt-2">
             <input
               type="checkbox"

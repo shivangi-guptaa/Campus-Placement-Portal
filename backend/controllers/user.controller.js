@@ -57,6 +57,13 @@ export const register = async (req, res) => {
       }
     }
 
+    // Generate & Send Registration Verification OTP Email
+    const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
+    otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
+    
+    console.log(`[REGISTRATION OTP] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
+    await sendOtpEmail(email, generatedOtp);
+
     await logAuditTrail({
       userId: newUser.id,
       action: "USER_REGISTERED",
@@ -65,9 +72,42 @@ export const register = async (req, res) => {
       req,
     });
 
-    res.status(201).json({ message: "Account registered successfully!", success: true });
+    res.status(201).json({
+      message: `Registration successful! 6-Digit Verification OTP sent to ${email}`,
+      success: true,
+      email,
+    });
   } catch (error) {
     console.error("Register Error:", error);
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
+export const verifyRegistrationOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP code are required", success: false });
+    }
+
+    const record = otpStore.get(email);
+    if (!record || record.otp !== String(otp).trim()) {
+      return res.status(400).json({ message: "Invalid 6-digit verification OTP code.", success: false });
+    }
+
+    if (Date.now() > record.expiresAt) {
+      otpStore.delete(email);
+      return res.status(400).json({ message: "OTP has expired. Please request a new code.", success: false });
+    }
+
+    otpStore.delete(email);
+
+    return res.status(200).json({
+      message: "Account verified successfully! You can now sign in.",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Verify Registration OTP Error:", error);
     res.status(500).json({ message: "Internal server error", success: false });
   }
 };
@@ -163,6 +203,8 @@ export const sendOtp = async (req, res) => {
 
     const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
     otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
+
+    console.log(`[OTP GENERATED] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
 
     // Send Real Email Delivery via Nodemailer securely to registered email
     await sendOtpEmail(email, generatedOtp);
