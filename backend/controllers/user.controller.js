@@ -86,7 +86,7 @@ export const register = async (req, res) => {
     });
 
     res.status(201).json({
-      message: `Account created successfully! 6-Digit Verification OTP sent to ${email}`,
+      message: `Account created! A 6-Digit Verification OTP has been sent to ${email}`,
       success: true,
       email,
     });
