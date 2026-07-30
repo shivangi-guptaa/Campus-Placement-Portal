@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:8000/api";
+export const BASE_URL = import.meta.env.VITE_BACKEND_URL || "https://campus-placement-portal-f3ot.onrender.com/api";
 export const USER_API_END_POINT = `${BASE_URL}/user`;
 export const JOB_API_END_POINT = `${BASE_URL}/job`;
 export const APPLICATION_API_END_POINT = `${BASE_URL}/application`;
