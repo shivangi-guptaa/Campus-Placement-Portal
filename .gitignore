@@ -1,0 +1,10 @@
+node_modules/
+frontend/node_modules/
+.env
+backend/.env
+dist/
+frontend/dist/
+*.sqlite
+logs/
+.DS_Store
+backend/public/uploads/

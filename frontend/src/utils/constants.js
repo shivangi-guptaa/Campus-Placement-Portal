@@ -1,0 +1,10 @@
+export const BASE_URL = "http://localhost:8000/api";
+export const USER_API_END_POINT = `${BASE_URL}/user`;
+export const JOB_API_END_POINT = `${BASE_URL}/job`;
+export const APPLICATION_API_END_POINT = `${BASE_URL}/application`;
+export const COMPANY_API_END_POINT = `${BASE_URL}/company`;
+export const ANALYTICS_API_END_POINT = `${BASE_URL}/analytics`;
+export const RECOMMENDATION_API_END_POINT = `${BASE_URL}/recommendation`;
+export const INTERVIEW_API_END_POINT = `${BASE_URL}/interview`;
+export const SAVED_JOB_API_END_POINT = `${BASE_URL}/saved-job`;
+export const NOTIFICATION_API_END_POINT = `${BASE_URL}/notification`;
