@@ -2,7 +2,7 @@
 
 A production-grade **University Campus Placement & Internship Management Engine** built with **Node.js, Express.js, Sequelize ORM, MySQL 8.0, and React**.
 
-Designed as a high-impact engineering portfolio project featuring **13 Normalized Relational MySQL Tables**, **Automated Campus Eligibility Engine**, **Weighted Skill Recommendation Algorithm**, **Raw SQL Analytics (Window Functions & CTEs)**, **Swagger OpenAPI Docs**, and **Sequelize Managed Transactions**.
+Featuring **13 Normalized Relational MySQL Tables**, **Automated Campus Eligibility Engine**, **Weighted Skill Recommendation Algorithm**, **Raw SQL Analytics (Window Functions & CTEs)**, **Swagger OpenAPI Docs**, and **Sequelize Managed Transactions**.
 
 ---
 
@@ -29,7 +29,7 @@ erDiagram
 
 ---
 
-## 🌟 Key Engineering Features
+## 🌟 Key Features
 
 ### 1. 🎓 Campus Eligibility Engine
 Automated eligibility checker validating:
@@ -57,17 +57,6 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
 
 ---
 
-## 📄 ATS Resume Bullet Points (Copy & Paste for Resume)
-
-> **University Campus Placement & Internship Management System (Full-Stack Engineer)**
-> - Designed and implemented a 13-table normalized MySQL database using Sequelize ORM, incorporating composite indexes `(companyId, status)` and foreign key constraints for optimal query performance.
-> - Developed an automated **Campus Eligibility & Skill Recommendation Engine** calculating multi-factor candidate match scores based on CGPA, branch, backlogs, and skill proficiency.
-> - Executed raw SQL aggregations using MySQL **Window Functions** (`ROW_NUMBER()`) and **Common Table Expressions (CTEs)** to deliver real-time TPO placement metrics and conversion funnels.
-> - Engineered atomic application workflows utilizing **Sequelize Managed Transactions** (`sequelize.transaction()`) to guarantee concurrency safety and zero duplicate applications.
-> - Built interactive **Swagger / OpenAPI 3.0** documentation and structured **Winston** request logging for production readiness.
-
----
-
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
@@ -78,7 +67,8 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
 
 1. **Clone the Repository**
    ```bash
-   cd C:\Shivangi\CampusPlacementPortal
+   git clone https://github.com/shivangi-guptaa/Campus-Placement-Portal.git
+   cd Campus-Placement-Portal
    ```
 
 2. **Configure Environment Variables**
