@@ -1,0 +1,48 @@
+name: CI Workflow
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password123
+          MYSQL_DATABASE: placement_portal
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Install Root Dependencies
+        run: npm install
+
+      - name: Install Frontend Dependencies & Build
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: Seed Database
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: password123
+          DB_NAME: placement_portal
+        run: node backend/seed.js

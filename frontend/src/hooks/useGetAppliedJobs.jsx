@@ -14,15 +14,15 @@ const useGetAppliedJobs = () => {
           withCredentials: true,
         });
         if (res.data.success) {
-          console.log("Applied jobs fetched:", res.data);
-          dispatch(setAllAppliedJobs(res.data.application));
+          const apps = res.data.applications || res.data.application || [];
+          dispatch(setAllAppliedJobs(apps));
         }
       } catch (error) {
-        console.log(error);
+        console.error("Fetch applied jobs error:", error);
       }
     };
     fetchAppliedJobs();
-  }, []);
+  }, [dispatch]);
 };
 
 export default useGetAppliedJobs;

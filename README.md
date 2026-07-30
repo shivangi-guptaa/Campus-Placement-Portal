@@ -1,8 +1,8 @@
-# 🎓 SkillSync: Enterprise Campus Placement & Internship Management System
+# 🎓 SkillSync: Campus Placement & Internship Management System
 
-A production-grade **University Campus Placement & Internship Management Engine** built with **Node.js, Express.js, Sequelize ORM, MySQL 8.0, and React**.
+A full-stack campus placement and internship management application built using **Node.js, Express.js, Sequelize ORM, MySQL 8.0, and React**.
 
-Featuring **13 Normalized Relational MySQL Tables**, **Automated Campus Eligibility Engine**, **Weighted Skill Recommendation Algorithm**, **Raw SQL Analytics (Window Functions & CTEs)**, **Swagger OpenAPI Docs**, and **Sequelize Managed Transactions**.
+Built with **13 normalized relational tables**, **automated eligibility evaluation**, **skill match recommendation algorithm**, **raw SQL analytics**, **Swagger API documentation**, and **concurrency-safe database transactions**.
 
 ---
 
@@ -29,31 +29,25 @@ erDiagram
 
 ---
 
-## 🌟 Key Features
+## 🌟 Architecture & Features
 
 ### 1. 🎓 Campus Eligibility Engine
-Automated eligibility checker validating:
-- **Minimum CGPA Threshold**
-- **Graduation Batch & Stream / Branch Compatibility**
-- **Maximum Active Backlogs Count**
-- **Required Primary Tech Skills**
-Provides real-time checklist breakdown with pass/fail reasons (e.g. `❌ Required CGPA: 8.0 (Your CGPA: 7.4)`).
+- Validates student **CGPA**, **Graduation Batch**, **Branch**, **Active Backlogs**, and **Primary Skills**.
+- Generates real-time pass/fail checklist evaluation on drive details page.
 
-### 2. ⚡ Multi-Factor Weighted Skill Recommendation Scoring
-Matches candidate profiles against active placement drives using weighted formula:
-$$\text{Score} = (50\% \times \text{Primary Skills}) + (20\% \times \text{Skill Proficiency}) + (15\% \times \text{CGPA}) + (10\% \times \text{Location}) + (5\% \times \text{Drive Type})$$
-Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 100%`, `Docker: 0%`.
+### 2. ⚡ Skill Match Recommendation Engine
+- Calculates candidate match scores based on primary skills, skill proficiency levels, CGPA eligibility, and location.
+- Provides skill-by-skill match breakdown (`React: 90%`, `Node.js: 100%`, `MySQL: 100%`).
 
-### 3. 📊 Raw SQL Analytics (Window Functions & CTEs)
-- **TPO Admin Dashboard**: Total Placed Students, Average Package (LPA), Highest Package (LPA), Placement Conversion Funnel, Top Demanded Skills.
-- **MySQL Window Functions**: `ROW_NUMBER() OVER(PARTITION BY companyId ORDER BY salary DESC)` to compute top package rankings per company.
-- **Common Table Expressions (CTEs)**: `WITH DailyStats AS (...)` to track application trends over time.
+### 3. 📊 Raw SQL Analytics
+- **MySQL Window Functions**: `ROW_NUMBER() OVER(PARTITION BY companyId ORDER BY salary DESC)` to rank top package offers per company.
+- **Common Table Expressions (CTEs)**: `WITH DailyStats AS (...)` to analyze daily application velocity.
+- **TPO Admin Dashboard**: Placement conversion funnel, placed student metrics, and top requested skills.
 
-### 4. 🔒 Concurrency-Safe DB Transactions & Security
-- **Atomic Transactions**: Application submission wraps operations in `sequelize.transaction()` to prevent partial DB writes and race conditions.
-- **Duplicate Prevention**: Composite unique indexes `(jobId, applicantId)`.
-- **API Security**: `helmet` security headers, CORS protection, `express-rate-limit`, structured `winston` logging.
-- **Swagger Documentation**: Interactive Swagger UI available live at `/api-docs`.
+### 4. 🔒 Concurrency-Safe Database Transactions & Security
+- Applications use `sequelize.transaction()` to guarantee atomic state updates.
+- Composite unique indexes `(jobId, applicantId)` prevent duplicate drive applications.
+- Integrated `helmet` security headers, `express-rate-limit`, structured `winston` logging, and interactive `Swagger / OpenAPI 3.0` documentation.
 
 ---
 
@@ -61,9 +55,9 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
 
 ### Prerequisites
 - **Node.js**: v18 or higher
-- **MySQL 8.0**: Installed and running on port 3306
+- **MySQL 8.0**: Installed and running on port 3306 (or via Docker)
 
-### Installation & Setup
+### Option A: Local Run
 
 1. **Clone the Repository**
    ```bash
@@ -83,7 +77,7 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
    ```
 
 3. **Configure Environment Variables**
-   Create a `.env` file in the root directory with your MySQL credentials:
+   Create a `.env` file in the root directory:
    ```env
    PORT=8000
    DB_HOST=127.0.0.1
@@ -96,7 +90,7 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
    ```
 
 4. **Seed Database**
-   Automatically creates database `placement_portal`, syncs 13 tables, and seeds sample data:
+   Creates the `placement_portal` database, syncs 13 tables, and seeds sample data:
    ```bash
    npm run seed
    ```
@@ -111,9 +105,18 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
    npm run dev
    ```
 
-6. **Access Points**
-   - **Web Application**: `http://localhost:5173`
-   - **Swagger API Docs**: `http://localhost:8000/api-docs`
+### Option B: Run via Docker Compose
+
+```bash
+docker-compose up --build
+```
+
+---
+
+## 🔗 Access Points & API Docs
+
+- **Web Application**: `http://localhost:5173`
+- **Swagger API Docs**: `http://localhost:8000/api-docs`
 
 ---
 

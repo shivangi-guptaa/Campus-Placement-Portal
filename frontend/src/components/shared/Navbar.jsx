@@ -2,7 +2,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import React from "react";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { LogOut, User2, BarChart3, FileText, Sun, Moon } from "lucide-react";
+import { LogOut, User2, BarChart3, FileText, Sun, Moon, Home as HomeIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
@@ -50,25 +50,26 @@ const Navbar = () => {
 
         <div className="flex items-center gap-6">
           <ul className="flex font-medium items-center gap-6 text-sm text-gray-700 dark:text-gray-300">
+            <li>
+              <Link to="/" className="hover:text-purple-600 font-medium">Home</Link>
+            </li>
+
             {user && (user.role === "recruiter" || user.role === "tpo_admin") ? (
               <>
                 <li>
-                  <Link to="/admin/tpo" className="hover:text-purple-600 font-semibold flex items-center gap-1">
-                    <BarChart3 className="w-4 h-4 text-purple-600" /> TPO Analytics
+                  <Link to="/admin/tpo" className="hover:text-purple-600 font-semibold flex items-center gap-1 text-purple-600 dark:text-purple-400">
+                    <BarChart3 className="w-4 h-4" /> TPO Analytics
                   </Link>
                 </li>
                 <li>
                   <Link to="/admin/companies" className="hover:text-purple-600">Companies</Link>
                 </li>
                 <li>
-                  <Link to="/admin/jobs" className="hover:text-purple-600">Placement Drives</Link>
+                  <Link to="/admin/jobs" className="hover:text-purple-600">Recruiter Drives</Link>
                 </li>
               </>
             ) : (
               <>
-                <li>
-                  <Link to="/" className="hover:text-purple-600">Home</Link>
-                </li>
                 <li>
                   <Link to="/jobs" className="hover:text-purple-600">Placement Drives</Link>
                 </li>
@@ -142,7 +143,7 @@ const Navbar = () => {
                   <div className="flex flex-col mt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
                     <Link to="/profile" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
                       <User2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      <span>View Student Profile</span>
+                      <span>View Profile</span>
                     </Link>
                     <button
                       onClick={logoutHandler}

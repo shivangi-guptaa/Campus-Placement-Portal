@@ -9,7 +9,7 @@ import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
-import { Loader2, User, Mail, Phone, Lock, ShieldCheck } from "lucide-react";
+import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, CheckSquare } from "lucide-react";
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -19,6 +19,8 @@ const Register = () => {
     password: "",
     role: "student",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -30,6 +32,10 @@ const Register = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    if (!agreedTerms) {
+      toast.error("Please accept the Campus Placement Rules & Terms checkbox to register");
+      return;
+    }
     if (!inputData.fullName || !inputData.email || !inputData.phoneNumber || !inputData.password || !inputData.role) {
       toast.error("Please fill all required fields");
       return;
@@ -117,15 +123,24 @@ const Register = () => {
             <Label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
               <Lock className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Password
             </Label>
-            <Input
-              type="password"
-              value={inputData.password}
-              name="password"
-              onChange={changeEventHandler}
-              placeholder="••••••••"
-              className="dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500"
-              required
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={inputData.password}
+                name="password"
+                onChange={changeEventHandler}
+                placeholder="••••••••"
+                className="dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500 pr-10"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-1 pt-1">
@@ -169,6 +184,20 @@ const Register = () => {
                 Recruiter
               </label>
             </div>
+          </div>
+
+          {/* Mandatory Checkbox */}
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={agreedTerms}
+              onChange={(e) => setAgreedTerms(e.target.checked)}
+              className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500 cursor-pointer"
+            />
+            <label htmlFor="terms" className="text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
+              I agree to the <span className="font-bold text-purple-600 dark:text-purple-400">Campus Placement Rules & Code of Conduct</span>
+            </label>
           </div>
 
           {loading ? (
