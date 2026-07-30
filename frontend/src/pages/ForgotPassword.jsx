@@ -10,7 +10,7 @@ import { USER_API_END_POINT } from "@/utils/constants";
 import { Loader2, Mail, Lock, KeyRound, ArrowLeft, Eye, EyeOff, ShieldCheck, Send } from "lucide-react";
 
 const ForgotPassword = () => {
-  const [step, setStep] = useState(1); // 1: Email Form, 2: OTP Verification & New Password
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -33,10 +33,8 @@ const ForgotPassword = () => {
       const res = await axios.post(`${USER_API_END_POINT}/send-otp`, { email });
 
       if (res.data.success) {
-        toast.success(res.data.message, { duration: 6000 });
-        if (res.data.otp) {
-          setOtp(res.data.otp); // Auto-fill demo OTP for easy testing!
-        }
+        toast.success(res.data.message || "6-Digit OTP sent to your registered email!");
+        setOtp(""); // Keep OTP field empty for secure manual entry
         setStep(2);
       }
     } catch (error) {
@@ -145,7 +143,7 @@ const ForgotPassword = () => {
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
-                  placeholder="e.g. 482910"
+                  placeholder="• • • • • •"
                   maxLength={6}
                   className="dark:bg-gray-800 dark:border-gray-700 dark:text-white font-mono tracking-widest text-center text-lg font-bold rounded-xl border-purple-500"
                   required

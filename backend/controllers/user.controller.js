@@ -149,9 +149,10 @@ export const sendOtp = async (req, res) => {
     const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
     otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
 
+    console.log(`[OTP GENERATED] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
+
     return res.status(200).json({
-      message: `6-Digit OTP generated! Demo OTP Code: ${generatedOtp}`,
-      otp: generatedOtp,
+      message: "6-Digit Verification OTP sent to your registered email address!",
       success: true,
     });
   } catch (error) {
