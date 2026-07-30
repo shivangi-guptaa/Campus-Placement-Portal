@@ -9,7 +9,7 @@ import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
-import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, CheckCircle2, Circle, FileText, X, PartyPopper } from "lucide-react";
+import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, CheckCircle2, Circle, FileText, X, PartyPopper, RefreshCw, ExternalLink } from "lucide-react";
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -28,7 +28,9 @@ const Register = () => {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [resendingOtp, setResendingOtp] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -81,7 +83,8 @@ const Register = () => {
       if (res.data.success) {
         toast.success(res.data.message);
         setRegisteredEmail(inputData.email);
-        setShowOtpModal(true); // Open OTP verification modal!
+        if (res.data.previewUrl) setPreviewUrl(res.data.previewUrl);
+        setShowOtpModal(true);
       }
     } catch (error) {
       console.log("Error in Register", error);
@@ -118,6 +121,25 @@ const Register = () => {
     }
   };
 
+  const handleResendOtp = async () => {
+    try {
+      setResendingOtp(true);
+      const res = await axios.post(`${USER_API_END_POINT}/resend-registration-otp`, {
+        email: registeredEmail,
+      });
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        if (res.data.previewUrl) setPreviewUrl(res.data.previewUrl);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setResendingOtp(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors pb-12">
       <Navbar />
@@ -137,7 +159,22 @@ const Register = () => {
               </p>
             </div>
 
-            <form onSubmit={handleVerifyRegistrationOtp} className="space-y-4 pt-2">
+            {/* Test Email Link if SMTP not configured */}
+            {previewUrl && (
+              <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-xs text-left space-y-1">
+                <p className="text-purple-800 dark:text-purple-300 font-bold">📩 Test Mode Ethereal Inbox Link:</p>
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 font-bold text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  View Delivered Verification Email <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyRegistrationOtp} className="space-y-4 pt-1">
               <div className="space-y-1 text-left">
                 <Label className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5" /> 6-Digit Verification OTP Code*
@@ -151,6 +188,19 @@ const Register = () => {
                   className="dark:bg-gray-800 dark:border-gray-700 dark:text-white font-mono tracking-widest text-center text-lg font-bold rounded-xl border-purple-500"
                   required
                 />
+              </div>
+
+              <div className="flex items-center justify-between text-xs pt-1">
+                <span className="text-gray-500 dark:text-gray-400">Didn't receive code?</span>
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendingOtp}
+                  className="font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  {resendingOtp ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                  Resend OTP
+                </button>
               </div>
 
               {verifyingOtp ? (

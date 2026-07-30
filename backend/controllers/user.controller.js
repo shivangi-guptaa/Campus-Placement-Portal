@@ -62,7 +62,7 @@ export const register = async (req, res) => {
     otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
     
     console.log(`[REGISTRATION OTP] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
-    await sendOtpEmail(email, generatedOtp);
+    const mailRes = await sendOtpEmail(email, generatedOtp);
 
     await logAuditTrail({
       userId: newUser.id,
@@ -74,6 +74,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       message: `Registration successful! 6-Digit Verification OTP sent to ${email}`,
+      previewUrl: mailRes?.previewUrl || null,
       success: true,
       email,
     });
@@ -108,6 +109,30 @@ export const verifyRegistrationOtp = async (req, res) => {
     });
   } catch (error) {
     console.error("Verify Registration OTP Error:", error);
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
+};
+
+export const resendRegistrationOtp = async (req, res) => {
+  const { email } = req.body;
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Email address is required", success: false });
+    }
+
+    const generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
+    otpStore.set(email, { otp: generatedOtp, expiresAt: Date.now() + 10 * 60 * 1000 });
+
+    console.log(`[RESEND REGISTRATION OTP] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
+    const mailRes = await sendOtpEmail(email, generatedOtp);
+
+    return res.status(200).json({
+      message: `A fresh 6-digit verification OTP has been sent to ${email}`,
+      previewUrl: mailRes?.previewUrl || null,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Resend Registration OTP Error:", error);
     res.status(500).json({ message: "Internal server error", success: false });
   }
 };
@@ -206,11 +231,11 @@ export const sendOtp = async (req, res) => {
 
     console.log(`[OTP GENERATED] Email: ${email} | 6-Digit OTP: ${generatedOtp}`);
 
-    // Send Real Email Delivery via Nodemailer securely to registered email
-    await sendOtpEmail(email, generatedOtp);
+    const mailRes = await sendOtpEmail(email, generatedOtp);
 
     return res.status(200).json({
       message: `6-Digit Verification OTP sent to ${email}! Please check your email inbox.`,
+      previewUrl: mailRes?.previewUrl || null,
       success: true,
     });
   } catch (error) {
