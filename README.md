@@ -63,7 +63,7 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
 - **Node.js**: v18 or higher
 - **MySQL 8.0**: Installed and running on port 3306
 
-### Installation
+### Installation & Setup
 
 1. **Clone the Repository**
    ```bash
@@ -71,8 +71,19 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
    cd Campus-Placement-Portal
    ```
 
-2. **Configure Environment Variables**
-   Ensure `backend/.env` contains your MySQL credentials:
+2. **Install Dependencies**
+   ```bash
+   # Install Backend Dependencies
+   npm install
+
+   # Install Frontend Dependencies
+   cd frontend
+   npm install
+   cd ..
+   ```
+
+3. **Configure Environment Variables**
+   Create a `.env` file in the root directory with your MySQL credentials:
    ```env
    PORT=8000
    DB_HOST=127.0.0.1
@@ -84,23 +95,23 @@ Returns granular skill match breakdown: `React: 90%`, `Node.js: 100%`, `MySQL: 1
    JWT_SECRET=supersecretjwtkey123
    ```
 
-3. **Seed Database**
+4. **Seed Database**
    Automatically creates database `placement_portal`, syncs 13 tables, and seeds sample data:
    ```bash
-   node backend/seed.js
+   npm run seed
    ```
 
-4. **Start Application**
+5. **Start Application**
    ```bash
-   # Start Backend
+   # Start Backend (Port 8000)
    npm run dev
 
-   # Start Frontend (in separate terminal)
+   # Start Frontend in separate terminal (Port 5173)
    cd frontend
    npm run dev
    ```
 
-5. **Access Points**
+6. **Access Points**
    - **Web Application**: `http://localhost:5173`
    - **Swagger API Docs**: `http://localhost:8000/api-docs`
 
