@@ -1,18 +1,211 @@
 import bcrypt from "bcryptjs";
 import { connectDB } from "./config/database.js";
-import { User, Company, Job, Skill, UserSkill, JobSkill, Application } from "./models/index.js";
+import { User, Company, Job, Skill, UserSkill, JobSkill, Application, ApplicationRound, PlacementRecord, PlacementPolicy } from "./models/index.js";
 
+/**
+ * Enterprise Demo Seed Data for Campus Placement Management System
+ * Uses realistic, distinguishable enterprise IT & consulting demo companies.
+ */
 export const seedData = async (isStandalone = false) => {
   try {
     await connectDB();
 
-    console.log("Seeding Campus Placement & Internship Database...");
+    console.log("Seeding Campus Placement Database with Realistic Demo Companies...");
 
     // Password Hash
     const salt = await bcrypt.genSalt(10);
     const passHash = await bcrypt.hash("password123", salt);
 
-    // 1. Create Diverse Student Users with Real CGPAs
+    // 0. Seed Default Institutional Placement Policy
+    const [policy] = await PlacementPolicy.findOrCreate({
+      where: { isActive: true },
+      defaults: {
+        name: "NIT Bhopal Official Campus Placement Policy",
+        maxOffersAllowed: 1,
+        allowPlacedStudentsToApply: false,
+        minCtcIncreasePercentage: 50.0,
+        dreamCompanyMinCtc: 10.0,
+        isActive: true,
+      },
+    });
+    await policy.update({
+      maxOffersAllowed: 1,
+      allowPlacedStudentsToApply: false,
+      minCtcIncreasePercentage: 50.0,
+      dreamCompanyMinCtc: 10.0,
+      isActive: true,
+    });
+
+    // 1. Create Recruiter & TPO Admin Users
+    const [tpoAdmin] = await User.findOrCreate({
+      where: { email: "tpo@demo.com" },
+      defaults: {
+        fullName: "Dr. R. K. Kapoor (Head TPO)",
+        email: "tpo@demo.com",
+        phoneNumber: "9988776655",
+        password: passHash,
+        role: "tpo_admin",
+        bio: "Head of Training & Placement Cell, MANIT / NIT Bhopal.",
+      },
+    });
+
+    const [recruiter] = await User.findOrCreate({
+      where: { email: "recruiter@demo.com" },
+      defaults: {
+        fullName: "Ananya Roy (Campus Talent Acquisition Lead)",
+        email: "recruiter@demo.com",
+        phoneNumber: "9123456789",
+        password: passHash,
+        role: "recruiter",
+        bio: "Campus Lead Talent Acquisition Partner for Enterprise IT.",
+      },
+    });
+
+    // 2. Create 10 Realistic, Distinct Demo Companies
+    const demoCompaniesData = [
+      {
+        name: "Infosys",
+        description: "Global leader in next-generation digital services and consulting, enabling clients across 56 countries to navigate their digital transformation.",
+        website: "https://www.infosys.com",
+        location: "Bengaluru",
+        industry: "Information Technology & Consulting",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-05"),
+        userId: recruiter.id,
+      },
+      {
+        name: "Tata Consultancy Services",
+        description: "Leading global IT services, consulting, and business solutions organization partnering with many of the world's largest businesses.",
+        website: "https://www.tcs.com",
+        location: "Mumbai",
+        industry: "Information Technology",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-08"),
+        userId: recruiter.id,
+      },
+      {
+        name: "Wipro",
+        description: "Leading technology services and consulting company focused on building innovative solutions that address clients' most complex digital transformation needs.",
+        website: "https://www.wipro.com",
+        location: "Bengaluru",
+        industry: "Information Technology & Cloud",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-10"),
+        userId: recruiter.id,
+      },
+      {
+        name: "Accenture",
+        description: "Global professional services company with leading capabilities in digital, cloud, and security across more than 40 industries.",
+        website: "https://www.accenture.com",
+        location: "Gurugram",
+        industry: "Management Consulting & Technology",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-12"),
+        userId: recruiter.id,
+      },
+      {
+        name: "Capgemini",
+        description: "Global leader in partnering with companies to transform and manage their business by harnessing the power of technology.",
+        website: "https://www.capgemini.com",
+        location: "Pune",
+        industry: "Consulting & Technology Services",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-15"),
+        userId: recruiter.id,
+      },
+      {
+        name: "Cognizant",
+        description: "One of the world's leading professional services companies, transforming clients' business, operating, and technology models for the digital era.",
+        website: "https://www.cognizant.com",
+        location: "Chennai",
+        industry: "Information Technology & Digital",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-18"),
+        userId: recruiter.id,
+      },
+      {
+        name: "Deloitte",
+        description: "Global provider of audit and assurance, consulting, financial advisory, risk advisory, tax, and related services.",
+        website: "https://www.deloitte.com",
+        location: "Hyderabad",
+        industry: "Consulting & Financial Advisory",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-20"),
+        userId: recruiter.id,
+      },
+      {
+        name: "IBM",
+        description: "Global cloud platform and cognitive solutions company, leading innovations in hybrid cloud, artificial intelligence, and quantum computing.",
+        website: "https://www.ibm.com",
+        location: "Bengaluru",
+        industry: "Cloud & Enterprise Software",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-22"),
+        userId: recruiter.id,
+      },
+      {
+        name: "Amazon",
+        description: "Global technology company focusing on e-commerce, cloud computing (AWS), digital streaming, and artificial intelligence.",
+        website: "https://www.amazon.jobs",
+        location: "Bengaluru",
+        industry: "Cloud Computing & E-Commerce",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-25"),
+        userId: recruiter.id,
+      },
+      {
+        name: "Microsoft",
+        description: "Global technology leader creating platforms and tools powered by AI to deliver innovative solutions in cloud, enterprise, and productivity software.",
+        website: "https://careers.microsoft.com",
+        location: "Hyderabad",
+        industry: "Software & Cloud Solutions",
+        status: "APPROVED",
+        isApproved: true,
+        approvedById: tpoAdmin.id,
+        approvedAt: new Date("2026-01-28"),
+        userId: recruiter.id,
+      },
+    ];
+
+    const companiesMap = {};
+    for (const c of demoCompaniesData) {
+      const [comp] = await Company.findOrCreate({
+        where: { name: c.name },
+        defaults: c,
+      });
+      await comp.update({
+        description: c.description,
+        website: c.website,
+        location: c.location,
+        industry: c.industry,
+        status: c.status,
+        isApproved: c.isApproved,
+        approvedById: c.approvedById,
+        approvedAt: c.approvedAt,
+        userId: c.userId,
+      });
+      companiesMap[c.name] = comp;
+    }
+
+    // 3. Create Student Users with Real Placement Statuses
     const studentsData = [
       {
         fullName: "Rahul Sharma",
@@ -25,6 +218,8 @@ export const seedData = async (isStandalone = false) => {
         cgpa: 8.75,
         batchYear: 2026,
         backlogsCount: 0,
+        placementStatus: "NOT_PLACED",
+        currentPackage: 0.00,
         bio: "Passionate Full Stack Developer & Competitive Programmer eager for campus placement opportunities.",
       },
       {
@@ -38,7 +233,11 @@ export const seedData = async (isStandalone = false) => {
         cgpa: 9.12,
         batchYear: 2026,
         backlogsCount: 0,
-        bio: "AI/ML Enthusiast and Data Structures Ranker (NIT Bhopal).",
+        placementStatus: "PLACED",
+        currentPackage: 18.00,
+        placedCompanyName: "Microsoft",
+        placedDate: new Date("2026-02-15"),
+        bio: "AI/ML Enthusiast and Data Structures Ranker (NIT Bhopal). Placed at Microsoft.",
       },
       {
         fullName: "Amit Patel",
@@ -51,7 +250,9 @@ export const seedData = async (isStandalone = false) => {
         cgpa: 7.60,
         batchYear: 2026,
         backlogsCount: 0,
-        bio: "Embedded Systems & Cloud Computing Developer.",
+        placementStatus: "OPTED_OUT",
+        currentPackage: 0.00,
+        bio: "Higher Studies / GATE Aspirant. Opted out of campus placements.",
       },
       {
         fullName: "Sneha Gupta",
@@ -64,6 +265,8 @@ export const seedData = async (isStandalone = false) => {
         cgpa: 8.40,
         batchYear: 2026,
         backlogsCount: 0,
+        placementStatus: "NOT_PLACED",
+        currentPackage: 0.00,
         bio: "Frontend React Engineer & UI/UX Specialist.",
       },
       {
@@ -77,6 +280,8 @@ export const seedData = async (isStandalone = false) => {
         cgpa: 6.85,
         batchYear: 2026,
         backlogsCount: 1,
+        placementStatus: "NOT_PLACED",
+        currentPackage: 0.00,
         bio: "Backend Systems Developer exploring Node.js and MySQL microservices.",
       },
     ];
@@ -87,36 +292,21 @@ export const seedData = async (isStandalone = false) => {
         where: { email: s.email },
         defaults: s,
       });
-      // Update CGPA explicitly in case record existed
-      await u.update({ cgpa: s.cgpa, branch: s.branch, degree: s.degree });
+      await u.update({
+        fullName: s.fullName,
+        phoneNumber: s.phoneNumber,
+        cgpa: s.cgpa,
+        branch: s.branch,
+        degree: s.degree,
+        placementStatus: s.placementStatus,
+        currentPackage: s.currentPackage,
+        placedCompanyName: s.placedCompanyName || null,
+        placedDate: s.placedDate || null,
+      });
       createdStudents.push(u);
     }
 
-    const [recruiter] = await User.findOrCreate({
-      where: { email: "recruiter@demo.com" },
-      defaults: {
-        fullName: "Ananya Roy (HR Manager)",
-        email: "recruiter@demo.com",
-        phoneNumber: "9123456789",
-        password: passHash,
-        role: "recruiter",
-        bio: "Campus Lead Talent Acquisition Partner at Microsoft & Amazon India.",
-      },
-    });
-
-    const [tpoAdmin] = await User.findOrCreate({
-      where: { email: "tpo@demo.com" },
-      defaults: {
-        fullName: "Dr. R. K. Kapoor (Head TPO)",
-        email: "tpo@demo.com",
-        phoneNumber: "9988776655",
-        password: passHash,
-        role: "tpo_admin",
-        bio: "Head of Training & Placement Cell, MANIT / NIT Bhopal.",
-      },
-    });
-
-    // 2. Create Primary Placement Skills
+    // 4. Create Skills
     const skillList = ["React", "Node.js", "MySQL", "JavaScript", "Python", "Java", "C++", "AWS", "Docker", "Tailwind CSS"];
     const skillObjs = [];
     for (const sName of skillList) {
@@ -124,150 +314,172 @@ export const seedData = async (isStandalone = false) => {
       skillObjs.push(sk);
     }
 
-    // Attach Skills to Students
-    try {
-      await createdStudents[0].addSkill(skillObjs[0], { through: { proficiency: "Expert" } }); // React
-      await createdStudents[0].addSkill(skillObjs[1], { through: { proficiency: "Expert" } }); // Node.js
-      await createdStudents[0].addSkill(skillObjs[2], { through: { proficiency: "Intermediate" } }); // MySQL
-      await createdStudents[1].addSkill(skillObjs[4], { through: { proficiency: "Expert" } }); // Python
-      await createdStudents[2].addSkill(skillObjs[5], { through: { proficiency: "Intermediate" } }); // Java
-    } catch (sErr) {
-      // Ignore if skills already linked
-    }
-
-    // 3. Create Companies
-    const companiesData = [
-      {
-        name: "Google Cloud India",
-        description: "Google Cloud Platform engineering division empowering global enterprise infrastructure and AI solutions.",
-        website: "https://cloud.google.com",
-        location: "Bengaluru",
-        industry: "Information Technology",
-        userId: recruiter.id,
-      },
-      {
-        name: "Microsoft India Development Center",
-        description: "Leading tech giant driving Azure cloud services, Developer Tools, and AI Innovation globally.",
-        website: "https://microsoft.com",
-        location: "Hyderabad",
-        industry: "Information Technology",
-        userId: recruiter.id,
-      },
-      {
-        name: "Zomato Tech",
-        description: "India's premier food ordering & hyper-local delivery logistics platform with high-scale microservices.",
-        website: "https://zomato.com",
-        location: "Gurugram",
-        industry: "E-Commerce",
-        userId: recruiter.id,
-      },
-      {
-        name: "Amazon Development Center",
-        description: "Global e-commerce and cloud computing pioneer powering AWS infrastructure and logistics technologies.",
-        website: "https://amazon.jobs",
-        location: "Bengaluru",
-        industry: "Cloud & E-Commerce",
-        userId: recruiter.id,
-      },
-      {
-        name: "Flipkart Tech",
-        description: "India's leading e-commerce ecosystem driving high-frequency supply chain and recommendation algorithms.",
-        website: "https://flipkart.com",
-        location: "Bengaluru",
-        industry: "E-Commerce",
-        userId: recruiter.id,
-      },
-    ];
-
-    const createdCompanies = [];
-    for (const c of companiesData) {
-      const [comp] = await Company.findOrCreate({
-        where: { name: c.name },
-        defaults: c,
-      });
-      createdCompanies.push(comp);
-    }
-
-    // 4. Create Placement Drives (Jobs)
+    // 5. Create Realistic Placement Drives Mapped to Canonical Companies
     const placementDrives = [
       {
-        title: "Software Development Engineer - I (SDE-1)",
-        description: "Join Google Cloud's core infrastructure team. Responsible for designing scalable microservices, backend REST APIs, and database architecture.",
-        requirements: "B.Tech / MCA 2026 Batch. Minimum 7.5 CGPA required. Strong proficiency in Data Structures, Algorithms, and System Design.",
-        salary: 28,
-        location: "Bengaluru",
+        title: "Systems Engineer Trainee",
+        companyName: "Infosys",
+        description: "Join Infosys Digital Specialist Engineer stream. Work on enterprise Java microservices, cloud deployments, and agile software development.",
+        requirements: "B.Tech / MCA 2026 Batch. Minimum 6.5 CGPA. Knowledge of Java, SQL, and Object-Oriented Design.",
+        salary: 9,
+        packageMin: 8.00,
+        packageMax: 9.50,
+        ctc: 9.00,
+        location: "Bengaluru / Pune",
         jobType: "Full-time",
-        minCgpa: 7.5,
+        driveType: "ON_CAMPUS",
+        approvalStatus: "PUBLISHED",
+        minCgpa: 6.5,
         batchYear: 2026,
-        positions: 5,
-        companyId: createdCompanies[0].id,
-        createdById: recruiter.id,
-        skillsToAttach: ["Node.js", "MySQL", "C++", "AWS"],
+        positions: 25,
+        applicationDeadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        driveDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+        skillsToAttach: ["Java", "MySQL", "JavaScript"],
       },
       {
-        title: "Frontend Engineering Intern (React / Next.js)",
-        description: "Build sleek user interfaces and intuitive frontend web experiences for Microsoft Azure Cloud Console.",
-        requirements: "Students passing out in 2026 with no active backlogs. Proficiency in React.js, JavaScript (ES6+), and Responsive Web Design.",
+        title: "Digital Software Developer (TCS Digital)",
+        companyName: "Tata Consultancy Services",
+        description: "TCS Digital flagship campus hiring. Work on cutting-edge technologies including IoT, Cloud Engineering, Big Data, and AI applications.",
+        requirements: "2026 Batch CS/IT/ECE. Minimum 7.0 CGPA with no active backlogs. Strong algorithmic and coding skills.",
+        salary: 8,
+        packageMin: 7.50,
+        packageMax: 8.50,
+        ctc: 8.00,
+        location: "Pan-India",
+        jobType: "Full-time",
+        driveType: "ON_CAMPUS",
+        approvalStatus: "PUBLISHED",
+        minCgpa: 7.0,
+        batchYear: 2026,
+        positions: 20,
+        applicationDeadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+        driveDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000),
+        skillsToAttach: ["Python", "Java", "Node.js", "Docker"],
+      },
+      {
+        title: "Cloud Application Developer",
+        companyName: "Accenture",
+        description: "Design and implement scalable full-stack web applications on cloud infrastructure for Fortune 500 enterprise clients.",
+        requirements: "B.Tech / MCA 2026 Batch. Minimum 6.8 CGPA. Hands-on experience with React, Node.js, and RESTful APIs.",
+        salary: 11,
+        packageMin: 9.50,
+        packageMax: 11.00,
+        ctc: 11.00,
+        location: "Gurugram / Hyderabad",
+        jobType: "Full-time",
+        driveType: "ON_CAMPUS",
+        approvalStatus: "PUBLISHED",
+        minCgpa: 6.8,
+        batchYear: 2026,
+        positions: 15,
+        applicationDeadline: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
+        driveDate: new Date(Date.now() + 19 * 24 * 60 * 60 * 1000),
+        skillsToAttach: ["React", "Node.js", "AWS", "MySQL"],
+      },
+      {
+        title: "Software Development Engineer - I (SDE-1)",
+        companyName: "Amazon",
+        description: "Join Amazon Web Services (AWS) or Retail Core platform teams. Build high-scale distributed systems handling millions of transactions per second.",
+        requirements: "B.Tech / MCA 2026 Batch. Minimum 7.5 CGPA. Strong Data Structures, Algorithms, and System Design.",
+        salary: 28,
+        packageMin: 24.00,
+        packageMax: 28.00,
+        ctc: 28.00,
+        location: "Bengaluru / Hyderabad",
+        jobType: "Full-time",
+        driveType: "ON_CAMPUS",
+        approvalStatus: "PUBLISHED",
+        minCgpa: 7.5,
+        batchYear: 2026,
+        positions: 6,
+        applicationDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        driveDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+        skillsToAttach: ["Java", "C++", "AWS", "Docker"],
+      },
+      {
+        title: "Frontend Engineering Intern (Azure Tools)",
+        companyName: "Microsoft",
+        description: "Develop interactive web applications, developer SDKs, and cloud dashboards for Microsoft Azure Developer Division.",
+        requirements: "Graduating batch 2026. Minimum 7.0 CGPA. Proficiency with React, TypeScript, and modern CSS architecture.",
         salary: 18,
+        packageMin: 15.00,
+        packageMax: 18.00,
+        ctc: 18.00,
         location: "Hyderabad",
         jobType: "Internship",
+        driveType: "ON_CAMPUS",
+        approvalStatus: "PUBLISHED",
         minCgpa: 7.0,
         batchYear: 2026,
         positions: 8,
-        companyId: createdCompanies[1].id,
-        createdById: recruiter.id,
-        skillsToAttach: ["React", "JavaScript", "Tailwind CSS", "Git"],
+        applicationDeadline: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
+        driveDate: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000),
+        skillsToAttach: ["React", "JavaScript", "Tailwind CSS"],
       },
       {
-        title: "Full Stack Engineer (MERN / MySQL)",
-        description: "Build robust full-stack features for Zomato's merchant and customer platform. Opportunity to scale APIs handling millions of requests.",
-        requirements: "Strong background in React, Node.js, Express, and Relational Databases (MySQL). Minimum 7.0 CGPA.",
-        salary: 14,
-        location: "Gurugram",
-        jobType: "PPO",
+        title: "Technology Analyst (Consulting Advisory)",
+        companyName: "Deloitte",
+        description: "Consulting advisory role assessing enterprise architecture, data management, and cybersecurity implementations.",
+        requirements: "B.Tech All Branches. Minimum 7.0 CGPA. Strong analytical and communication skills.",
+        salary: 12,
+        packageMin: 10.00,
+        packageMax: 12.00,
+        ctc: 12.00,
+        location: "Hyderabad / Mumbai",
+        jobType: "Full-time",
+        driveType: "ON_CAMPUS",
+        approvalStatus: "PUBLISHED",
         minCgpa: 7.0,
+        batchYear: 2026,
+        positions: 10,
+        applicationDeadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+        driveDate: new Date(Date.now() + 22 * 24 * 60 * 60 * 1000),
+        skillsToAttach: ["Python", "MySQL", "AWS"],
+      },
+      {
+        title: "Global Cognitive & AI Fellow (Off-Campus)",
+        companyName: "IBM",
+        description: "Global AI residency program working with IBM watsonx AI models and quantum computing simulations.",
+        requirements: "B.Tech / M.Tech / PhD candidates. External direct application link provided.",
+        salary: 24,
+        packageMin: 20.00,
+        packageMax: 24.00,
+        ctc: 24.00,
+        location: "Remote / Bengaluru",
+        jobType: "Full-time",
+        driveType: "OFF_CAMPUS",
+        approvalStatus: "PUBLISHED",
+        minCgpa: 7.5,
         batchYear: 2026,
         positions: 4,
-        companyId: createdCompanies[2].id,
-        createdById: recruiter.id,
-        skillsToAttach: ["Node.js", "React", "MySQL", "JavaScript"],
-      },
-      {
-        title: "Cloud Infrastructure & DevOps Engineer",
-        description: "Manage distributed cloud architecture, Docker containers, and CI/CD deployment pipelines for Amazon Web Services.",
-        requirements: "B.Tech 2026 Batch (CS/IT/ECE). Minimum 7.2 CGPA. Hands-on experience with Linux, AWS, Docker, and shell scripting.",
-        salary: 22,
-        location: "Bengaluru",
-        jobType: "Full-time",
-        minCgpa: 7.2,
-        batchYear: 2026,
-        positions: 6,
-        companyId: createdCompanies[3].id,
-        createdById: recruiter.id,
-        skillsToAttach: ["AWS", "Docker", "Node.js", "Python"],
-      },
-      {
-        title: "Backend Systems Developer (Java / Spring)",
-        description: "Develop resilient high-throughput transaction processing systems for Flipkart's core payment and catalog engines.",
-        requirements: "Strong Java/C++ fundamentals, object-oriented design, and relational database management systems. Min 7.0 CGPA.",
-        salary: 20,
-        location: "Bengaluru",
-        jobType: "Full-time",
-        minCgpa: 7.0,
-        batchYear: 2026,
-        positions: 7,
-        companyId: createdCompanies[4].id,
-        createdById: recruiter.id,
-        skillsToAttach: ["Java", "MySQL", "Node.js", "C++"],
+        externalUrl: "https://www.ibm.com/careers/research-fellowship",
+        skillsToAttach: ["Python", "C++", "AWS"],
       },
     ];
 
+    const createdDrives = [];
     for (const driveData of placementDrives) {
-      const { skillsToAttach, ...driveFields } = driveData;
+      const { companyName, skillsToAttach, ...driveFields } = driveData;
+      const comp = companiesMap[companyName];
+      if (!comp) continue;
+
       const [driveObj] = await Job.findOrCreate({
-        where: { title: driveFields.title, companyId: driveFields.companyId },
-        defaults: driveFields,
+        where: { title: driveFields.title, companyId: comp.id },
+        defaults: {
+          ...driveFields,
+          companyId: comp.id,
+          createdById: recruiter.id,
+          approvedById: tpoAdmin.id,
+          approvedAt: new Date(),
+          status: "active",
+        },
       });
+      await driveObj.update({
+        ...driveFields,
+        companyId: comp.id,
+        status: "active",
+      });
+      createdDrives.push(driveObj);
 
       for (const skName of skillsToAttach) {
         const sk = skillObjs.find((s) => s.name === skName);
@@ -278,35 +490,87 @@ export const seedData = async (isStandalone = false) => {
               defaults: { isPrimary: true },
             });
           } catch (skAttachErr) {
-            // Ignore if junction row exists
+            // Ignored
           }
-        }
-      }
-
-      // Seed applications safely
-      for (const stud of createdStudents.slice(0, 3)) {
-        try {
-          await Application.findOrCreate({
-            where: { jobId: driveObj.id, applicantId: stud.id },
-            defaults: {
-              status: "shortlisted",
-              coverLetter: "Extremely excited about this opportunity! I have strong proficiency in React and Node.js.",
-            },
-          });
-        } catch (appErr) {
-          // Ignore duplicate application seed error
         }
       }
     }
 
-    console.log("Database Seeded Successfully!");
+    // 6. Seed Applications with Multi-Round Pipeline
+    // Rahul (student@demo.com) applied to Infosys
+    const infosysDrive = createdDrives.find((d) => d.title === "Systems Engineer Trainee");
+    if (infosysDrive) {
+      const [app1] = await Application.findOrCreate({
+        where: { jobId: infosysDrive.id, applicantId: createdStudents[0].id },
+        defaults: {
+          status: "APPLIED",
+          coverLetter: "Strong background in Java and Object-Oriented Design.",
+        },
+      });
+
+      await ApplicationRound.findOrCreate({
+        where: { applicationId: app1.id, roundNumber: 1 },
+        defaults: {
+          roundName: "Round 1: Online Aptitude & Technical Assessment",
+          roundType: "APTITUDE",
+          status: "PASSED",
+          score: 88.0,
+          feedback: "Cleared quantitative and core programming assessment.",
+        },
+      });
+
+      await ApplicationRound.findOrCreate({
+        where: { applicationId: app1.id, roundNumber: 2 },
+        defaults: {
+          roundName: "Round 2: Technical & HR Interview",
+          roundType: "TECHNICAL_INTERVIEW",
+          status: "SCHEDULED",
+          scheduledAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+          meetingLink: "https://meet.google.com/inf-campus-round2",
+          locationDetails: "Campus Placement Cell Hall B",
+        },
+      });
+    }
+
+    // Priya (priya@demo.com) placed at Microsoft (18 LPA)
+    const microsoftDrive = createdDrives.find((d) => d.title === "Frontend Engineering Intern (Azure Tools)");
+    if (microsoftDrive) {
+      const [app2] = await Application.findOrCreate({
+        where: { jobId: microsoftDrive.id, applicantId: createdStudents[1].id },
+        defaults: {
+          status: "SHORTLISTED",
+          coverLetter: "Frontend engineering specialist with React and TypeScript.",
+        },
+      });
+
+      const [record] = await PlacementRecord.findOrCreate({
+        where: { studentId: createdStudents[1].id, driveId: microsoftDrive.id },
+        defaults: {
+          companyId: companiesMap["Microsoft"].id,
+          companyName: "Microsoft",
+          offeredPackage: 18.00,
+          offerType: "FTE",
+          status: "CONFIRMED_PLACED",
+          confirmedById: tpoAdmin.id,
+          confirmedAt: new Date("2026-02-15"),
+        },
+      });
+      await record.update({
+        companyId: companiesMap["Microsoft"].id,
+        companyName: "Microsoft",
+        offeredPackage: 18.00,
+        status: "CONFIRMED_PLACED",
+      });
+    }
+
+    console.log("Database Seeded Successfully with 10 Distinct Demo Companies!");
     console.log("-----------------------------------------");
-    console.log("Demo Student Accounts with Diverse CGPAs:");
-    console.log("1. Rahul Sharma (student@demo.com) | CGPA: 8.75");
-    console.log("2. Priya Verma  (priya@demo.com)   | CGPA: 9.12");
-    console.log("3. Amit Patel   (amit@demo.com)    | CGPA: 7.60");
-    console.log("4. Sneha Gupta  (sneha@demo.com)   | CGPA: 8.40");
-    console.log("5. Vikram Singh (vikram@demo.com)  | CGPA: 6.85");
+    console.log("Demo Accounts (Password: password123):");
+    console.log("1. Student (Unplaced):    student@demo.com  (Rahul Sharma | CGPA: 8.75)");
+    console.log("2. Student (Placed):      priya@demo.com    (Priya Verma  | Placed at Microsoft 18 LPA)");
+    console.log("3. Student (Opted-Out):   amit@demo.com     (Amit Patel   | GATE Aspirant)");
+    console.log("4. Recruiter:             recruiter@demo.com (Ananya Roy   | Campus Lead Recruiter)");
+    console.log("5. TPO Admin (Officer):   tpo@demo.com      (Dr. R. K. Kapoor | Head TPO)");
     console.log("-----------------------------------------");
 
     if (isStandalone) {
@@ -320,7 +584,6 @@ export const seedData = async (isStandalone = false) => {
   }
 };
 
-// Run standalone if executed directly via node backend/seed.js
 if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("seed.js")) {
   seedData(true);
 }

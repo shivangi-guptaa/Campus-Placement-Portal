@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import { Bookmark, BookmarkCheck, ArrowRight } from "lucide-react";
+import { Bookmark, BookmarkCheck, ArrowRight, ExternalLink, ShieldCheck, GraduationCap, Building2 } from "lucide-react";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -25,10 +25,11 @@ const Job = ({ job }) => {
   };
 
   const driveId = job?.id || job?._id;
+  const isOffCampus = (job?.driveType || "ON_CAMPUS").toUpperCase() === "OFF_CAMPUS";
 
   const handleSaveToggle = async () => {
     if (!user) {
-      toast.error("Please login to save placement drives");
+      toast.error("Please login to bookmark placement drives");
       navigate("/login");
       return;
     }
@@ -45,87 +46,109 @@ const Job = ({ job }) => {
         toast.success(res.data.message);
       }
     } catch (error) {
-      // Local toggle fallback for UI feedback
       setIsSaved(!isSaved);
-      toast.success(isSaved ? "Drive removed from saved list" : "Drive saved to bookmarks!");
+      toast.success(isSaved ? "Drive removed from saved list" : "Drive bookmarked!");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-5 rounded-2xl shadow-sm hover:shadow-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-gray-900 dark:text-white transform hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full">
-      <div>
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-bold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+    <div className="p-5 rounded-3xl shadow-sm hover:shadow-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-gray-900 dark:text-white transform hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden">
+      {/* Top Banner Tag for On-Campus vs Off-Campus */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        {isOffCampus ? (
+          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-1">
+            <ExternalLink className="w-3 h-3" /> Off-Campus Opportunity
+          </span>
+        ) : (
+          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-purple-600" /> TPO On-Campus Drive
+          </span>
+        )}
+
+        <div className="flex items-center gap-1">
+          <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
             {daysAgoFunction(job?.createdAt)}
-          </p>
+          </span>
           <Button
             variant="ghost"
             size="icon"
             onClick={handleSaveToggle}
-            className={`rounded-full transition-transform active:scale-95 ${
+            className={`rounded-full h-8 w-8 transition-transform active:scale-95 ${
               isSaved ? "text-purple-600 dark:text-purple-400 fill-purple-600" : "text-gray-400 hover:text-purple-600"
             }`}
           >
-            {isSaved ? <BookmarkCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" /> : <Bookmark className="w-5 h-5" />}
+            {isSaved ? <BookmarkCheck className="w-4 h-4 text-purple-600 dark:text-purple-400" /> : <Bookmark className="w-4 h-4" />}
           </Button>
         </div>
+      </div>
 
-        <div className="flex items-center gap-3 my-3">
-          <Avatar className="w-12 h-12 border-2 border-purple-100 dark:border-purple-900 shadow-sm">
+      <div>
+        <div className="flex items-center gap-3 my-2">
+          <Avatar className="w-12 h-12 border-2 border-purple-100 dark:border-purple-900 shadow-sm rounded-2xl">
             <AvatarImage src={job?.company?.logo || "https://github.com/shadcn.png"} />
           </Avatar>
-          <div>
-            <h1 className="font-extrabold text-base text-gray-900 dark:text-white leading-tight">
-              {job?.company?.name || "Tech Company"}
+          <div className="min-w-0 flex-1">
+            <h1 className="font-extrabold text-sm text-gray-900 dark:text-white truncate">
+              {job?.company?.name || "Company information unavailable"}
             </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{job?.location}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{job?.location || "Pan-India"}</p>
           </div>
         </div>
 
         <div>
-          <h1 className="font-bold text-lg my-1.5 text-gray-900 dark:text-white hover:text-purple-600 transition-colors cursor-pointer" onClick={() => navigate(`/description/${driveId}`)}>
+          <h2
+            className="font-bold text-base my-1 text-gray-900 dark:text-white hover:text-purple-600 transition-colors cursor-pointer line-clamp-1"
+            onClick={() => navigate(`/description/${driveId}`)}
+          >
             {job?.title}
-          </h1>
+          </h2>
           <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">
             {job?.description}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 mt-4">
-          <Badge className="text-blue-700 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800" variant="ghost">
-            {job?.positions} openings
+        {/* Academic & CTC Badges */}
+        <div className="flex flex-wrap items-center gap-1.5 mt-3">
+          <Badge className="text-purple-700 dark:text-purple-300 font-extrabold bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-[11px]" variant="ghost">
+            💰 {job?.salary || job?.ctc} LPA
           </Badge>
-          <Badge className="text-[#F83002] dark:text-red-400 font-bold bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800" variant="ghost">
-            {job?.jobType}
+          <Badge className="text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[10px]" variant="ghost">
+            Min CGPA: {job?.minCgpa || 6.0}
           </Badge>
-          <Badge className="text-[#7209B7] dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800" variant="ghost">
-            {job?.salary} LPA
+          <Badge className="text-blue-700 dark:text-blue-300 font-bold bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-[10px]" variant="ghost">
+            {job?.batchYear || 2026} Batch
           </Badge>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mt-6 pt-4 border-t dark:border-gray-800">
+      <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t dark:border-gray-800">
         <Button
           variant="outline"
-          className="w-full rounded-xl dark:border-gray-700 dark:text-white font-bold text-xs hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="w-full rounded-xl dark:border-gray-700 dark:text-white font-bold text-xs hover:bg-gray-100 dark:hover:bg-gray-800"
           onClick={() => navigate(`/description/${driveId}`)}
         >
-          View Details <ArrowRight className="w-3.5 h-3.5 ml-1" />
+          View Criteria <ArrowRight className="w-3.5 h-3.5 ml-1" />
         </Button>
 
-        <Button
-          onClick={handleSaveToggle}
-          disabled={loading}
-          className={`w-full rounded-xl font-bold text-xs transition-all ${
-            isSaved
-              ? "bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-400"
-              : "bg-[#7209B7] hover:bg-[#5b0793] text-white shadow-sm hover:shadow-md"
-          }`}
-        >
-          {isSaved ? "Saved" : "Save Drive"}
-        </Button>
+        {isOffCampus && job?.externalUrl ? (
+          <a
+            href={job.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full inline-flex items-center justify-center rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+          >
+            Apply External <ExternalLink className="w-3 h-3 ml-1" />
+          </a>
+        ) : (
+          <Button
+            onClick={() => navigate(`/description/${driveId}`)}
+            className="w-full rounded-xl font-bold text-xs bg-[#6A38C2] hover:bg-[#582da7] text-white shadow-sm"
+          >
+            Apply Drive
+          </Button>
+        )}
       </div>
     </div>
   );

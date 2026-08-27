@@ -2,7 +2,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import React from "react";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { LogOut, User2, BarChart3, Sun, Moon } from "lucide-react";
+import { LogOut, User2, BarChart3, Sun, Moon, Briefcase, Building2, PlusCircle, Award, Compass, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
@@ -35,6 +35,13 @@ const Navbar = () => {
     }
   };
 
+  const getRoleBadge = () => {
+    if (!user) return "Placement Portal";
+    if (user.role === "tpo_admin") return "🛡️ TPO Officer Portal";
+    if (user.role === "recruiter") return "🏢 Recruiter Portal";
+    return "🎓 Student Portal";
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 border-b dark:border-gray-800 sticky top-0 z-50 shadow-sm transition-colors duration-200">
       <div className="flex items-center justify-between mx-auto max-w-7xl h-16 px-4">
@@ -42,8 +49,8 @@ const Navbar = () => {
           <Link to="/">
             <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
               Skill<span className="text-[#6A38C2]">Sync</span>
-              <span className="text-[11px] text-purple-600 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 px-2 py-0.5 rounded-full">
-                TPO Portal
+              <span className="text-[11px] text-purple-600 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 px-2.5 py-0.5 rounded-full">
+                {getRoleBadge()}
               </span>
             </h1>
           </Link>
@@ -55,27 +62,57 @@ const Navbar = () => {
               <Link to="/" className="hover:text-purple-600 font-medium">Home</Link>
             </li>
 
-            {user && (user.role === "recruiter" || user.role === "tpo_admin") ? (
+            {user?.role === "tpo_admin" && (
               <>
                 <li>
-                  <Link to="/admin/tpo" className="hover:text-purple-600 font-semibold flex items-center gap-1 text-purple-600 dark:text-purple-400">
-                    <BarChart3 className="w-4 h-4" /> TPO Analytics
+                  <Link to="/admin/tpo" className="hover:text-purple-600 font-semibold flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
+                    <BarChart3 className="w-4 h-4" /> TPO Dashboard
                   </Link>
                 </li>
                 <li>
-                  <Link to="/admin/companies" className="hover:text-purple-600">Companies</Link>
+                  <Link to="/admin/companies" className="hover:text-purple-600 flex items-center gap-1">
+                    <Building2 className="w-4 h-4" /> Companies
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/admin/jobs" className="hover:text-purple-600">Recruiter Drives</Link>
+                  <Link to="/admin/jobs" className="hover:text-purple-600 flex items-center gap-1">
+                    <Briefcase className="w-4 h-4" /> Drives
+                  </Link>
                 </li>
               </>
-            ) : (
+            )}
+
+            {user?.role === "recruiter" && (
               <>
                 <li>
-                  <Link to="/jobs" className="hover:text-purple-600">Placement Drives</Link>
+                  <Link to="/admin/jobs" className="hover:text-purple-600 flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
+                    <Briefcase className="w-4 h-4" /> My Placement Drives
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/browse" className="hover:text-purple-600">Browse Companies</Link>
+                  <Link to="/admin/jobs/create" className="hover:text-purple-600 flex items-center gap-1">
+                    <PlusCircle className="w-4 h-4" /> Post Drive
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/admin/companies" className="hover:text-purple-600 flex items-center gap-1">
+                    <Building2 className="w-4 h-4" /> My Company
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {(!user || user.role === "student") && (
+              <>
+                <li>
+                  <Link to="/jobs" className="hover:text-purple-600 flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
+                    <Award className="w-4 h-4" /> On-Campus Drives
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/browse" className="hover:text-purple-600 flex items-center gap-1">
+                    <Building2 className="w-4 h-4" /> Browse Companies
+                  </Link>
                 </li>
               </>
             )}
@@ -125,15 +162,22 @@ const Navbar = () => {
                     <div>
                       <h4 className="font-bold text-gray-900 dark:text-white text-sm">{user?.fullName}</h4>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-                      <span className="text-[10px] font-bold bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded uppercase mt-1 inline-block">
-                        Role: {user?.role}
-                      </span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-extrabold bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded uppercase">
+                          {user?.role === "tpo_admin" ? "TPO Officer" : user?.role}
+                        </span>
+                        {user?.placementStatus && user?.placementStatus !== "NOT_PLACED" && (
+                          <span className="text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded">
+                            {user.placementStatus}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex flex-col mt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
                     <Link to="/profile" className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800">
                       <User2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      <span>View Profile</span>
+                      <span>My Profile & Placement Record</span>
                     </Link>
                     <button
                       onClick={logoutHandler}

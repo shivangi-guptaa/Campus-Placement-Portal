@@ -1,12 +1,27 @@
 import express from "express";
-import { applyJob, getAppliedJobs, getApplicants, updateStatus } from "../controllers/application.controller.js";
-import { protect, recruiterOrAdminOnly } from "../middlewares/auth.middleware.js";
+import {
+  applyJob,
+  getAppliedJobs,
+  getApplicants,
+  updateStatus,
+  withdrawApplication,
+} from "../controllers/application.controller.js";
+import { protect, studentOnly, recruiterOrAdminOnly } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/apply/:id", protect, applyJob);
-router.get("/get", protect, getAppliedJobs);
+// Apply endpoints
+router.post("/apply/:id", protect, studentOnly, applyJob);
+router.post("/:id/apply", protect, studentOnly, applyJob);
+
+// View endpoints
+router.get("/get", protect, studentOnly, getAppliedJobs);
+router.get("/me", protect, studentOnly, getAppliedJobs);
 router.get("/:id/applicants", protect, recruiterOrAdminOnly, getApplicants);
-router.post("/update-status/:id", protect, recruiterOrAdminOnly, updateStatus);
+
+// Status & Withdrawal
+router.patch("/:id/withdraw", protect, studentOnly, withdrawApplication);
+router.patch("/status/:id/update", protect, recruiterOrAdminOnly, updateStatus);
+router.patch("/:id/status", protect, recruiterOrAdminOnly, updateStatus);
 
 export default router;

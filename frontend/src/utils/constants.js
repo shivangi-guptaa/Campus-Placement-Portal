@@ -10,11 +10,15 @@ export const BASE_URL = import.meta.env.VITE_BACKEND_URL || (isLocalhost ? "http
 
 export const USER_API_END_POINT = `${BASE_URL}/user`;
 export const JOB_API_END_POINT = `${BASE_URL}/job`;
+export const DRIVE_API_END_POINT = `${BASE_URL}/drives`;
 export const APPLICATION_API_END_POINT = `${BASE_URL}/application`;
 export const COMPANY_API_END_POINT = `${BASE_URL}/company`;
 export const ANALYTICS_API_END_POINT = `${BASE_URL}/analytics`;
 export const RECOMMENDATION_API_END_POINT = `${BASE_URL}/recommendation`;
 export const INTERVIEW_API_END_POINT = `${BASE_URL}/interview`;
+export const ROUND_API_END_POINT = `${BASE_URL}/rounds`;
+export const RESULT_API_END_POINT = `${BASE_URL}/results`;
+export const POLICY_API_END_POINT = `${BASE_URL}/policy`;
 export const SAVED_JOB_API_END_POINT = `${BASE_URL}/saved-job`;
 export const NOTIFICATION_API_END_POINT = `${BASE_URL}/notification`;
 

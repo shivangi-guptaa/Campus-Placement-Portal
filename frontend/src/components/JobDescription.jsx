@@ -125,8 +125,18 @@ const JobDescription = () => {
 
         <div className="my-4 space-y-2 text-sm text-gray-800 dark:text-gray-200">
           <h1 className="font-bold">
-            Company: <span className="pl-4 font-normal text-gray-700 dark:text-gray-300">{singleJob?.company?.name}</span>
+            Company: <span className="pl-4 font-normal text-gray-700 dark:text-gray-300">{singleJob?.company?.name || "Company information unavailable"}</span>
           </h1>
+          {singleJob?.company?.industry && (
+            <h1 className="font-bold">
+              Industry: <span className="pl-4 font-normal text-gray-700 dark:text-gray-300">{singleJob?.company?.industry}</span>
+            </h1>
+          )}
+          {singleJob?.company?.website && (
+            <h1 className="font-bold">
+              Website: <a href={singleJob?.company?.website} target="_blank" rel="noreferrer" className="pl-4 font-normal text-purple-600 dark:text-purple-400 hover:underline">{singleJob?.company?.website}</a>
+            </h1>
+          )}
           <h1 className="font-bold">
             Job Type: <span className="pl-4 font-normal text-gray-700 dark:text-gray-300">{singleJob?.jobType}</span>
           </h1>

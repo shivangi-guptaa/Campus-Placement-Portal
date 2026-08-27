@@ -23,6 +23,9 @@ import recommendationRouter from "./routes/recommendation.route.js";
 import interviewRouter from "./routes/interview.route.js";
 import savedJobRouter from "./routes/savedJob.route.js";
 import notificationRouter from "./routes/notification.route.js";
+import roundRouter from "./routes/round.route.js";
+import resultRouter from "./routes/result.route.js";
+import policyRouter from "./routes/policy.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -60,11 +63,22 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/uploads", express.static(path.join(__dirname, "backend", "public", "uploads")));
 app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
 
-// REST API Endpoints
+// REST API Endpoints & Enterprise Aliases
 app.use("/api/user", userRouter);
+
 app.use("/api/company", companyRouter);
+app.use("/api/companies", companyRouter);
+
 app.use("/api/job", jobRouter);
+app.use("/api/drives", jobRouter);
+
 app.use("/api/application", applicationRouter);
+app.use("/api/applications", applicationRouter);
+
+app.use("/api/rounds", roundRouter);
+app.use("/api/results", resultRouter);
+app.use("/api/policy", policyRouter);
+
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/recommendation", recommendationRouter);
 app.use("/api/interview", interviewRouter);
@@ -90,6 +104,7 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({
     message: err.message || "Internal Server Error",
     success: false,
+    errors: err.errors || [],
   });
 });
 

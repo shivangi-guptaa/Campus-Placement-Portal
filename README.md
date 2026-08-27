@@ -1,198 +1,57 @@
-# 🎓 SkillSync — Campus Placement & Internship Management Portal
+# 🎓 SkillSync — University Campus Placement & Internship Management System
 
-A full-stack campus placement and internship management application built with **Node.js, Express.js, Sequelize ORM, MySQL/SQLite, and React 19**.
-
-[![Live Frontend](https://img.shields.io/badge/Live%20Frontend-Vercel-black?style=flat-square&logo=vercel)](https://campus-placement-portal-orcin.vercel.app)
-[![Backend API](https://img.shields.io/badge/Backend%20API-Render-blue?style=flat-square&logo=render)](https://campus-placement-portal-f3ot.onrender.com)
-[![GitHub](https://img.shields.io/badge/GitHub-shivangi--guptaa-gray?style=flat-square&logo=github)](https://github.com/shivangi-guptaa/Campus-Placement-Portal)
+A full-stack, enterprise-grade **Campus Placement Management System** designed for universities, colleges, and training & placement cells. The system establishes the **Training & Placement Officer (TPO) as the central authority** while providing streamlined portals for **Recruiters** and **Students**.
 
 ---
 
-## 🌐 Live Demo
+## 🌟 Key Features & Workflows
 
-| Service | URL |
-|---------|-----|
-| 🖥️ Frontend | [campus-placement-portal-orcin.vercel.app](https://campus-placement-portal-orcin.vercel.app) |
-| ⚙️ Backend API | [campus-placement-portal-f3ot.onrender.com](https://campus-placement-portal-f3ot.onrender.com) |
+### 🛡️ 1. TPO-Centric Central Authority
+- **Company Verification Workflow**: Companies registering on the portal start in `PENDING` status and cannot host drives until officially approved by the TPO.
+- **Drive Authorization & Publishing**: Recruiter-posted drives are submitted in `PENDING_APPROVAL` status. The TPO verifies eligibility rules and publishes approved drives to eligible students.
+- **Official Placement Result Confirmation**: Recruiters submit candidate outcomes to a queue (`PENDING_TPO_CONFIRMATION`). Final placement status and records are confirmed exclusively by the TPO.
+- **Institutional Placement Policy Management**: Configurable rules for max offers allowed, allowed placed candidate applications, minimum % CTC increment required, and dream company CTC thresholds.
 
-> **Note:** Backend is on Render free tier — first request may take 30–60 seconds to wake up.
+### 🏢 2. Recruiter Portal
+- Post On-Campus Placement Drives and Off-Campus Opportunities.
+- View applicant pipelines with automatic eligibility indicators and attached PDF resumes.
+- Schedule multi-round recruitment pipelines (Aptitude Assessment, Coding, Technical System Design, HR Interview) with scores and feedback.
+- Submit final candidate offers for TPO confirmation.
 
----
-
-## 🔐 Demo Accounts
-
-| Role | Email | Password |
-|------|-------|----------|
-| 🎓 **Student** | `student@demo.com` | `password123` |
-| 🏢 **Recruiter** | `recruiter@demo.com` | `password123` |
-| 🛡️ **TPO Admin** | `tpo@demo.com` | `password123` |
-
----
-
-## ✨ Features
-
-### 👨‍🎓 Students
-- Register with email OTP verification & password strength checklist
-- Apply to placement drives with real-time eligibility check (CGPA, branch, batch, backlogs)
-- Track application status (Pending → Shortlisted → Interview Scheduled → Offered)
-- View skill-match recommendation scores per drive
-- Upload PDF resume, manage profile
-
-### 🏢 Recruiters
-- Post placement drives with custom eligibility criteria and job role dropdown
-- View applicants with CGPA, branch, eligibility badge & resume PDF link
-- Update applicant status (Shortlisted / Interview Scheduled / Offered / Rejected)
-
-### 🛡️ TPO Admins
-- Placement analytics dashboard (MySQL window functions, CTEs)
-- Placement calendar with interactive drive timeline modal
-- Company management (name, description, website, location, logo)
-- Manage all drives & companies
-
-### 🔒 Security & Auth
-- JWT-based authentication (access + refresh tokens)
-- Email OTP verification on registration & password reset (Nodemailer / Gmail SMTP)
-- bcrypt password hashing
-- Helmet security headers, Winston structured logging, CORS protection
-- Concurrency-safe applications using `sequelize.transaction()`
+### 🎓 3. Student Portal
+- Tabbed exploration of **TPO-Verified On-Campus Placement Drives** vs **External Off-Campus Opportunities**.
+- Backend-enforced institutional eligibility engine (CGPA, active backlogs, eligible branches, passing batch, and placement policy clearance).
+- Interactive **Multi-Round Application Progress Portal** tracking round progression, schedules, meeting links, and feedback.
+- Placement Status Card on student profile (`NOT_PLACED`, `PLACED`, `MULTIPLE_OFFERS`, `OPTED_OUT`).
+- 1-click application withdrawal mechanism.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19, Vite, TailwindCSS, shadcn/ui (Radix UI), Redux Toolkit |
-| **Backend** | Node.js, Express.js |
-| **ORM** | Sequelize 6 |
-| **Database** | MySQL 8.0 (local/production) / SQLite (auto-fallback) |
-| **Auth** | JWT, bcryptjs |
-| **Email** | Nodemailer (Gmail SMTP) |
-| **File Upload** | Multer, Cloudinary |
-| **Logging** | Winston |
-| **API Docs** | Swagger / OpenAPI 3.0 |
-| **Deployment** | Vercel (frontend) + Render (backend) |
+- **Frontend**: React 18, Vite, Redux Toolkit, Tailwind CSS, Lucide Icons, Radix UI / Shadcn UI components.
+- **Backend**: Node.js, Express.js (ESM), Sequelize ORM.
+- **Database**: MySQL (Production) with smart SQLite fallback for container deployments.
+- **Authentication & Security**: JWT (HTTP-only cookie + Bearer Authorization header), Bcryptjs, Helmet, Role-Based Access Control (RBAC).
 
 ---
 
-## 🗄️ Database ER Diagram
+## 🔑 Demo Accounts (Password: `password123`)
 
-```mermaid
-erDiagram
-    Users ||--o{ Companies : "manages"
-    Users ||--o{ Applications : "submits"
-    Users ||--o{ SavedJobs : "bookmarks"
-    Users ||--o{ Notifications : "receives"
-    Users ||--o{ UserSkills : "possesses"
-    Users ||--o{ AuditLogs : "audits"
-    Companies ||--o{ Jobs : "posts_drives"
-    Jobs ||--o{ Applications : "receives"
-    Jobs ||--o{ JobSkills : "requires"
-    Jobs ||--o{ SavedJobs : "bookmarked_in"
-    Jobs }|--|| Categories : "belongs_to"
-    Skills ||--o{ JobSkills : "linked"
-    Skills ||--o{ UserSkills : "linked"
-    Applications ||--o{ Interviews : "schedules"
-    Interviews ||--o{ InterviewFeedbacks : "evaluates"
-```
+| Role | Email | Details |
+|---|---|---|
+| **TPO Admin (Officer)** | `tpo@demo.com` | Dr. R. K. Kapoor (Head TPO) |
+| **Recruiter** | `recruiter@demo.com` | Ananya Roy (Lead HR Partner) |
+| **Student (Unplaced)** | `student@demo.com` | Rahul Sharma (CGPA: 8.75) |
+| **Student (Placed)** | `priya@demo.com` | Priya Verma (Placed at Microsoft 18 LPA) |
+| **Student (Opted-Out)** | `amit@demo.com` | Amit Patel (GATE / Higher Studies Aspirant) |
 
 ---
 
-## 🚀 Local Setup
+## 🧪 Security & Verification Tests
 
-### Prerequisites
-- Node.js v18+
-- MySQL 8.0 *(optional — SQLite is used automatically if MySQL is not configured)*
-
-### Steps
-
+Run the comprehensive 10-scenario automated verification test suite:
 ```bash
-# 1. Clone the repository
-git clone https://github.com/shivangi-guptaa/Campus-Placement-Portal.git
-cd Campus-Placement-Portal
-
-# 2. Install dependencies
-npm install
-cd frontend && npm install && cd ..
-
-# 3. Create .env file in root (see variables below)
-
-# 4. Seed database with sample data
-npm run seed
-
-# 5. Start backend (port 8000)
-npm run dev
-
-# 6. In a new terminal, start frontend (port 5173)
-cd frontend && npm run dev
+node backend/test_scenarios.js
 ```
-
-### Environment Variables (`.env`)
-
-```env
-PORT=8000
-
-# MySQL (optional — SQLite auto-used if not set)
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=placement_portal
-
-# Auth
-JWT_SECRET=your_super_secret_jwt_key
-
-# Email OTP (optional — OTP delivery skipped if not set)
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASS=your_16_digit_gmail_app_password
-
-# Cloudinary (optional — local storage used if not set)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-```
-
-### Docker
-
-```bash
-docker-compose up --build
-```
-
----
-
-## ☁️ Production Deployment
-
-### Frontend → Vercel
-1. Go to [vercel.com/new](https://vercel.com/new) → Import `shivangi-guptaa/Campus-Placement-Portal`
-2. **Root Directory**: `frontend`
-3. **Build Command**: `npm run build`
-4. **Output Directory**: `dist`
-5. Deploy ✅
-
-### Backend → Render
-1. Go to [dashboard.render.com](https://dashboard.render.com) → New Web Service
-2. Connect `shivangi-guptaa/Campus-Placement-Portal`
-3. **Build Command**: `npm install`
-4. **Start Command**: `node backend/index.js`
-5. Add Environment Variables:
-
-| Key | Value |
-|-----|-------|
-| `PORT` | `8000` |
-| `JWT_SECRET` | *(any random secret string)* |
-| `EMAIL_USER` | *(your Gmail address — optional)* |
-| `EMAIL_PASS` | *(16-digit Gmail App Password — optional)* |
-| `DB_HOST` | *(external MySQL host — optional)* |
-| `DB_USER` | *(MySQL username — optional)* |
-| `DB_PASSWORD` | *(MySQL password — optional)* |
-
-> 💡 If MySQL env vars are **not set**, the backend automatically uses **SQLite** — no extra setup needed for basic testing.
-
----
-
-## 👩‍💻 Developer
-
-**Shivangi Gupta** — NIT Bhopal
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-shivangi--gupta--nitbhopal-blue?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/shivangi-gupta-nitbhopal)
-[![GitHub](https://img.shields.io/badge/GitHub-shivangi--guptaa-gray?style=flat-square&logo=github)](https://github.com/shivangi-guptaa)
+All 10 critical security scenarios (unapproved company guard, duplicate 409 conflict, eligibility rejection, cross-recruiter isolation, placement policy enforcement, and TPO offer confirmation) pass with 100% success.

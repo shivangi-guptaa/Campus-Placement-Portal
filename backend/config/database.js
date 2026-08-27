@@ -45,8 +45,11 @@ export const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log(`[DB] Connection authenticated successfully (${useMysql ? "MySQL" : "SQLite"}).`);
-    await sequelize.sync({ alter: true });
-    console.log("[DB] Database models & tables synchronized successfully.");
+    
+    // Run safe migrations without alter: true
+    const { runMigrations } = await import("../migrator.js");
+    await runMigrations();
+    console.log("[DB] Database schema and migrations verified successfully.");
   } catch (error) {
     console.error("[DB Connection Error]:", error.message);
   }

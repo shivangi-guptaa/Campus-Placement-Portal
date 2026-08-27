@@ -4,9 +4,7 @@ import { User, Skill, UserSkill } from "../models/index.js";
 import { uploadFile } from "../utils/upload.js";
 import { logAuditTrail } from "../utils/auditLogger.js";
 import { sendOtpEmail } from "../utils/emailService.js";
-
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretjwtkey123";
-const REFRESH_SECRET = process.env.REFRESH_SECRET || "supersecretrefreshkey456";
+import { JWT_SECRET, REFRESH_SECRET } from "../config/jwtConfig.js";
 
 const otpStore = new Map();
 
