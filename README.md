@@ -1,6 +1,6 @@
 # 🎓 SkillSync — Campus Placement & Internship Management Portal
 
-> A full-stack, production-deployed campus recruitment platform built for NIT Bhopal.
+A full-stack campus placement and internship management application built with **Node.js, Express.js, Sequelize ORM, MySQL/SQLite, and React 19**.
 
 [![Live Frontend](https://img.shields.io/badge/Live%20Frontend-Vercel-black?style=flat-square&logo=vercel)](https://campus-placement-portal-orcin.vercel.app)
 [![Backend API](https://img.shields.io/badge/Backend%20API-Render-blue?style=flat-square&logo=render)](https://campus-placement-portal-f3ot.onrender.com)
@@ -15,45 +15,46 @@
 | 🖥️ Frontend | [campus-placement-portal-orcin.vercel.app](https://campus-placement-portal-orcin.vercel.app) |
 | ⚙️ Backend API | [campus-placement-portal-f3ot.onrender.com](https://campus-placement-portal-f3ot.onrender.com) |
 
-> **Note:** Backend is hosted on Render free tier — first request may take 30–60 seconds to wake up.
+> **Note:** Backend is on Render free tier — first request may take 30–60 seconds to wake up.
 
 ---
 
 ## 🔐 Demo Accounts
 
-| Role | Email | Password | Access |
-|------|-------|----------|--------|
-| 🎓 **Student** | `student@demo.com` | `Password@123` | Apply to drives, track status, view eligibility |
-| 🏢 **Recruiter** | `recruiter@demo.com` | `Password@123` | Post drives, review applicants, schedule interviews |
-| 🛡️ **TPO Admin** | `tpo@demo.com` | `Password@123` | Analytics dashboard, company management, placement reports |
+| Role | Email | Password |
+|------|-------|----------|
+| 🎓 **Student** | `student@demo.com` | `password123` |
+| 🏢 **Recruiter** | `recruiter@demo.com` | `password123` |
+| 🛡️ **TPO Admin** | `tpo@demo.com` | `password123` |
 
 ---
 
 ## ✨ Features
 
 ### 👨‍🎓 Students
-- Register with email OTP verification
-- Apply to placement drives with eligibility check (CGPA, branch, batch, backlogs)
-- Track application status in real-time (Pending → Shortlisted → Interview → Offered)
+- Register with email OTP verification & password strength checklist
+- Apply to placement drives with real-time eligibility check (CGPA, branch, batch, backlogs)
+- Track application status (Pending → Shortlisted → Interview Scheduled → Offered)
 - View skill-match recommendation scores per drive
 - Upload PDF resume, manage profile
 
 ### 🏢 Recruiters
-- Post placement drives with custom eligibility criteria
+- Post placement drives with custom eligibility criteria and job role dropdown
 - View applicants with CGPA, branch, eligibility badge & resume PDF link
 - Update applicant status (Shortlisted / Interview Scheduled / Offered / Rejected)
 
 ### 🛡️ TPO Admins
-- Placement analytics dashboard with SQL window functions & CTEs
-- Company management (add description, website, location, logo)
-- Placement calendar with drive timeline modal
+- Placement analytics dashboard (MySQL window functions, CTEs)
+- Placement calendar with interactive drive timeline modal
+- Company management (name, description, website, location, logo)
 - Manage all drives & companies
 
 ### 🔒 Security & Auth
 - JWT-based authentication (access + refresh tokens)
-- Email OTP verification on registration & password reset
+- Email OTP verification on registration & password reset (Nodemailer / Gmail SMTP)
 - bcrypt password hashing
-- Helmet security headers, CORS protection
+- Helmet security headers, Winston structured logging, CORS protection
+- Concurrency-safe applications using `sequelize.transaction()`
 
 ---
 
@@ -61,13 +62,15 @@
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | React 18, Vite, TailwindCSS, shadcn/ui, Redux Toolkit |
+| **Frontend** | React 19, Vite, TailwindCSS, shadcn/ui (Radix UI), Redux Toolkit |
 | **Backend** | Node.js, Express.js |
-| **ORM** | Sequelize (MySQL / SQLite fallback) |
-| **Database** | MySQL 8.0 (local) / SQLite (Render fallback) |
+| **ORM** | Sequelize 6 |
+| **Database** | MySQL 8.0 (local/production) / SQLite (auto-fallback) |
 | **Auth** | JWT, bcryptjs |
 | **Email** | Nodemailer (Gmail SMTP) |
 | **File Upload** | Multer, Cloudinary |
+| **Logging** | Winston |
+| **API Docs** | Swagger / OpenAPI 3.0 |
 | **Deployment** | Vercel (frontend) + Render (backend) |
 
 ---
@@ -99,7 +102,7 @@ erDiagram
 
 ### Prerequisites
 - Node.js v18+
-- MySQL 8.0 (optional — SQLite is used automatically if MySQL is not configured)
+- MySQL 8.0 *(optional — SQLite is used automatically if MySQL is not configured)*
 
 ### Steps
 
@@ -108,21 +111,19 @@ erDiagram
 git clone https://github.com/shivangi-guptaa/Campus-Placement-Portal.git
 cd Campus-Placement-Portal
 
-# 2. Install all dependencies
+# 2. Install dependencies
 npm install
 cd frontend && npm install && cd ..
 
-# 3. Create .env file in root
-cp .env.example .env
-# Fill in your values (see below)
+# 3. Create .env file in root (see variables below)
 
-# 4. Seed the database with sample data
+# 4. Seed database with sample data
 npm run seed
 
 # 5. Start backend (port 8000)
 npm run dev
 
-# 6. Start frontend in a new terminal (port 5173)
+# 6. In a new terminal, start frontend (port 5173)
 cd frontend && npm run dev
 ```
 
@@ -131,7 +132,7 @@ cd frontend && npm run dev
 ```env
 PORT=8000
 
-# MySQL (optional — SQLite used automatically if not set)
+# MySQL (optional — SQLite auto-used if not set)
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=root
@@ -141,7 +142,7 @@ DB_NAME=placement_portal
 # Auth
 JWT_SECRET=your_super_secret_jwt_key
 
-# Email OTP (optional — OTP skipped if not set)
+# Email OTP (optional — OTP delivery skipped if not set)
 EMAIL_USER=your_gmail@gmail.com
 EMAIL_PASS=your_16_digit_gmail_app_password
 
@@ -151,15 +152,21 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
+### Docker
+
+```bash
+docker-compose up --build
+```
+
 ---
 
 ## ☁️ Production Deployment
 
 ### Frontend → Vercel
 1. Go to [vercel.com/new](https://vercel.com/new) → Import `shivangi-guptaa/Campus-Placement-Portal`
-2. Set **Root Directory**: `frontend`
-3. Set **Build Command**: `npm run build`
-4. Set **Output Directory**: `dist`
+2. **Root Directory**: `frontend`
+3. **Build Command**: `npm run build`
+4. **Output Directory**: `dist`
 5. Deploy ✅
 
 ### Backend → Render
@@ -172,14 +179,14 @@ CLOUDINARY_API_SECRET=your_api_secret
 | Key | Value |
 |-----|-------|
 | `PORT` | `8000` |
-| `JWT_SECRET` | *(any random string)* |
-| `EMAIL_USER` | *(your Gmail)* |
-| `EMAIL_PASS` | *(16-digit Gmail App Password)* |
-| `DB_HOST` | *(Railway/PlanetScale MySQL host — optional)* |
-| `DB_USER` | *(MySQL user — optional)* |
+| `JWT_SECRET` | *(any random secret string)* |
+| `EMAIL_USER` | *(your Gmail address — optional)* |
+| `EMAIL_PASS` | *(16-digit Gmail App Password — optional)* |
+| `DB_HOST` | *(external MySQL host — optional)* |
+| `DB_USER` | *(MySQL username — optional)* |
 | `DB_PASSWORD` | *(MySQL password — optional)* |
 
-> 💡 If MySQL env vars are **not set**, the backend automatically uses **SQLite** — no extra setup needed!
+> 💡 If MySQL env vars are **not set**, the backend automatically uses **SQLite** — no extra setup needed for basic testing.
 
 ---
 
