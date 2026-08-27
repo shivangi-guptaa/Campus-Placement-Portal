@@ -11,6 +11,8 @@ import helmet from "helmet";
 import { connectDB } from "./config/database.js";
 import { swaggerSpec } from "./config/swagger.js";
 import { logger } from "./config/logger.js";
+import { Company, Job } from "./models/index.js";
+import { seedData } from "./seed.js";
 
 import userRouter from "./routes/user.route.js";
 import companyRouter from "./routes/company.route.js";
@@ -97,4 +99,14 @@ app.listen(PORT, async () => {
   console.log(`Swagger API Docs: http://localhost:${PORT}/api-docs`);
   console.log(`======================================================`);
   await connectDB();
+  try {
+    const jobCount = await Job.count();
+    const companyCount = await Company.count();
+    if (jobCount === 0 || companyCount === 0) {
+      console.log("[Auto-Seed] Database has empty drives/companies. Populating sample placement drives & companies...");
+      await seedData(false);
+    }
+  } catch (err) {
+    console.error("[Auto-Seed Error]:", err.message);
+  }
 });

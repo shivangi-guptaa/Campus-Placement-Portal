@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "./config/database.js";
 import { User, Company, Job, Skill, UserSkill, JobSkill, Application } from "./models/index.js";
 
-const seedData = async () => {
+export const seedData = async (isStandalone = false) => {
   try {
     await connectDB();
 
@@ -100,89 +100,114 @@ const seedData = async () => {
         phoneNumber: "9123456789",
         password: passHash,
         role: "recruiter",
-        degree: "B.Tech",
-        branch: "IT",
-        cgpa: 9.0,
-        batchYear: 2024,
+        bio: "Campus Lead Talent Acquisition Partner at Microsoft & Amazon India.",
       },
     });
 
     const [tpoAdmin] = await User.findOrCreate({
       where: { email: "tpo@demo.com" },
       defaults: {
-        fullName: "Prof. V. K. Gupta (Head TPO)",
+        fullName: "Dr. R. K. Kapoor (Head TPO)",
         email: "tpo@demo.com",
         phoneNumber: "9988776655",
         password: passHash,
         role: "tpo_admin",
-        degree: "Ph.D.",
-        branch: "Computer Science",
+        bio: "Head of Training & Placement Cell, MANIT / NIT Bhopal.",
       },
     });
 
-    // 2. Seed Skills
-    const skillsList = [
-      "JavaScript", "React", "Node.js", "Python", "MySQL", "Java", 
-      "C++", "Data Structures", "Docker", "AWS", "Git", "Tailwind CSS"
-    ];
-
+    // 2. Create Primary Placement Skills
+    const skillList = ["React", "Node.js", "MySQL", "JavaScript", "Python", "Java", "C++", "AWS", "Docker", "Tailwind CSS"];
     const skillObjs = [];
-    for (const name of skillsList) {
-      const [sk] = await Skill.findOrCreate({ where: { name } });
+    for (const sName of skillList) {
+      const [sk] = await Skill.findOrCreate({ where: { name: sName } });
       skillObjs.push(sk);
     }
 
-    // Tag skills to students
-    for (const stud of createdStudents) {
-      for (let i = 0; i < 5; i++) {
-        await UserSkill.findOrCreate({
-          where: { userId: stud.id, skillId: skillObjs[i].id },
-          defaults: { proficiency: i % 2 === 0 ? "Expert" : "Intermediate" },
-        });
-      }
-    }
+    // Attach Skills to Students
+    await createdStudents[0].addSkill(skillObjs[0], { through: { proficiency: "Expert" } }); // React
+    await createdStudents[0].addSkill(skillObjs[1], { through: { proficiency: "Expert" } }); // Node.js
+    await createdStudents[0].addSkill(skillObjs[2], { through: { proficiency: "Intermediate" } }); // MySQL
+    await createdStudents[1].addSkill(skillObjs[4], { through: { proficiency: "Expert" } }); // Python
+    await createdStudents[2].addSkill(skillObjs[5], { through: { proficiency: "Intermediate" } }); // Java
 
     // 3. Create Companies
-    const companies = [
-      { name: "Google India", location: "Bangalore", website: "https://careers.google.com", industry: "Tech / Cloud", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" },
-      { name: "Microsoft Corporation", location: "Hyderabad", website: "https://careers.microsoft.com", industry: "Software / AI", logo: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" },
-      { name: "Zomato", location: "Gurugram", website: "https://zomato.com", industry: "E-Commerce / FoodTech", logo: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Zomato_Logo.svg" },
-      { name: "Amazon India", location: "Bengaluru", website: "https://amazon.jobs", industry: "Cloud / Logistics", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" },
+    const companiesData = [
+      {
+        name: "Google Cloud India",
+        description: "Google Cloud Platform engineering division empowering global enterprise infrastructure and AI solutions.",
+        website: "https://cloud.google.com",
+        location: "Bengaluru",
+        industry: "Information Technology",
+        userId: recruiter.id,
+      },
+      {
+        name: "Microsoft India Development Center",
+        description: "Leading tech giant driving Azure cloud services, Developer Tools, and AI Innovation globally.",
+        website: "https://microsoft.com",
+        location: "Hyderabad",
+        industry: "Information Technology",
+        userId: recruiter.id,
+      },
+      {
+        name: "Zomato Tech",
+        description: "India's premier food ordering & hyper-local delivery logistics platform with high-scale microservices.",
+        website: "https://zomato.com",
+        location: "Gurugram",
+        industry: "E-Commerce",
+        userId: recruiter.id,
+      },
+      {
+        name: "Amazon Development Center",
+        description: "Global e-commerce and cloud computing pioneer powering AWS infrastructure and logistics technologies.",
+        website: "https://amazon.jobs",
+        location: "Bengaluru",
+        industry: "Cloud & E-Commerce",
+        userId: recruiter.id,
+      },
+      {
+        name: "Flipkart Tech",
+        description: "India's leading e-commerce ecosystem driving high-frequency supply chain and recommendation algorithms.",
+        website: "https://flipkart.com",
+        location: "Bengaluru",
+        industry: "E-Commerce",
+        userId: recruiter.id,
+      },
     ];
 
     const createdCompanies = [];
-    for (const c of companies) {
+    for (const c of companiesData) {
       const [comp] = await Company.findOrCreate({
         where: { name: c.name },
-        defaults: { ...c, userId: recruiter.id },
+        defaults: c,
       });
       createdCompanies.push(comp);
     }
 
-    // 4. Create Placement Drives
+    // 4. Create Placement Drives (Jobs)
     const placementDrives = [
       {
         title: "Software Development Engineer - I (SDE-1)",
-        description: "Join Google India's Core Engineering team working on large-scale distributed systems, search performance, and cloud microservices.",
-        requirements: "Solid proficiency in Data Structures, Algorithms, JavaScript, Node.js, and MySQL. Minimum 7.5 CGPA required.",
-        salary: 18,
-        location: "Bangalore",
+        description: "Join Google Cloud's core infrastructure team. Responsible for designing scalable microservices, backend REST APIs, and database architecture.",
+        requirements: "B.Tech / MCA 2026 Batch. Minimum 7.5 CGPA required. Strong proficiency in Data Structures, Algorithms, and System Design.",
+        salary: 28,
+        location: "Bengaluru",
         jobType: "Full-time",
         minCgpa: 7.5,
         batchYear: 2026,
         positions: 5,
         companyId: createdCompanies[0].id,
         createdById: recruiter.id,
-        skillsToAttach: ["JavaScript", "Node.js", "MySQL", "Data Structures"],
+        skillsToAttach: ["Node.js", "MySQL", "C++", "AWS"],
       },
       {
-        title: "Frontend React Developer (Campus Internship)",
-        description: "6-month campus internship with PPO conversion. Build high performance web applications using React, Redux Toolkit, and Tailwind CSS.",
-        requirements: "Hands-on experience with React, JavaScript, CSS, HTML. Minimum 6.5 CGPA.",
-        salary: 4,
+        title: "Frontend Engineering Intern (React / Next.js)",
+        description: "Build sleek user interfaces and intuitive frontend web experiences for Microsoft Azure Cloud Console.",
+        requirements: "Students passing out in 2026 with no active backlogs. Proficiency in React.js, JavaScript (ES6+), and Responsive Web Design.",
+        salary: 18,
         location: "Hyderabad",
         jobType: "Internship",
-        minCgpa: 6.5,
+        minCgpa: 7.0,
         batchYear: 2026,
         positions: 8,
         companyId: createdCompanies[1].id,
@@ -202,6 +227,34 @@ const seedData = async () => {
         companyId: createdCompanies[2].id,
         createdById: recruiter.id,
         skillsToAttach: ["Node.js", "React", "MySQL", "JavaScript"],
+      },
+      {
+        title: "Cloud Infrastructure & DevOps Engineer",
+        description: "Manage distributed cloud architecture, Docker containers, and CI/CD deployment pipelines for Amazon Web Services.",
+        requirements: "B.Tech 2026 Batch (CS/IT/ECE). Minimum 7.2 CGPA. Hands-on experience with Linux, AWS, Docker, and shell scripting.",
+        salary: 22,
+        location: "Bengaluru",
+        jobType: "Full-time",
+        minCgpa: 7.2,
+        batchYear: 2026,
+        positions: 6,
+        companyId: createdCompanies[3].id,
+        createdById: recruiter.id,
+        skillsToAttach: ["AWS", "Docker", "Node.js", "Python"],
+      },
+      {
+        title: "Backend Systems Developer (Java / Spring)",
+        description: "Develop resilient high-throughput transaction processing systems for Flipkart's core payment and catalog engines.",
+        requirements: "Strong Java/C++ fundamentals, object-oriented design, and relational database management systems. Min 7.0 CGPA.",
+        salary: 20,
+        location: "Bengaluru",
+        jobType: "Full-time",
+        minCgpa: 7.0,
+        batchYear: 2026,
+        positions: 7,
+        companyId: createdCompanies[4].id,
+        createdById: recruiter.id,
+        skillsToAttach: ["Java", "MySQL", "Node.js", "C++"],
       },
     ];
 
@@ -243,11 +296,19 @@ const seedData = async () => {
     console.log("4. Sneha Gupta  (sneha@demo.com)   | CGPA: 8.40");
     console.log("5. Vikram Singh (vikram@demo.com)  | CGPA: 6.85");
     console.log("-----------------------------------------");
-    process.exit(0);
+
+    if (isStandalone) {
+      process.exit(0);
+    }
   } catch (err) {
     console.error("Seed Failed:", err);
-    process.exit(1);
+    if (isStandalone) {
+      process.exit(1);
+    }
   }
 };
 
-seedData();
+// Run standalone if executed directly via node backend/seed.js
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("seed.js")) {
+  seedData(true);
+}
