@@ -24,6 +24,7 @@ const Navbar = () => {
         withCredentials: true,
       });
       if (res.data.success) {
+        localStorage.removeItem("token");
         dispatch(setUser(null));
         navigate("/");
         toast.success(res.data.message);

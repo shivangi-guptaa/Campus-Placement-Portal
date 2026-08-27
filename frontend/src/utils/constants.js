@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const isLocalhost = typeof window !== "undefined" && Boolean(
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1" ||
@@ -15,3 +17,15 @@ export const RECOMMENDATION_API_END_POINT = `${BASE_URL}/recommendation`;
 export const INTERVIEW_API_END_POINT = `${BASE_URL}/interview`;
 export const SAVED_JOB_API_END_POINT = `${BASE_URL}/saved-job`;
 export const NOTIFICATION_API_END_POINT = `${BASE_URL}/notification`;
+
+// Auto-attach Authorization JWT Bearer Token to all Axios requests
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
