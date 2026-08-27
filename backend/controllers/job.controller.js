@@ -84,7 +84,7 @@ export const getAllJobs = async (req, res) => {
 
     const whereClause = { status: "active" };
 
-    if (keyword) {
+    if (keyword && keyword.trim().length > 0) {
       whereClause[Op.or] = [
         { title: { [Op.like]: `%${keyword}%` } },
         { description: { [Op.like]: `%${keyword}%` } },
@@ -92,15 +92,21 @@ export const getAllJobs = async (req, res) => {
       ];
     }
 
-    if (location) whereClause.location = { [Op.like]: `%${location}%` };
-    if (jobType) whereClause.jobType = jobType;
-    if (minSalary > 0) whereClause.salary = { [Op.gte]: minSalary };
+    if (location && location.trim().length > 0) {
+      whereClause.location = { [Op.like]: `%${location}%` };
+    }
+    if (jobType && jobType.trim().length > 0) {
+      whereClause.jobType = jobType;
+    }
+    if (minSalary > 0) {
+      whereClause.salary = { [Op.gte]: minSalary };
+    }
 
     let order = [["createdAt", "DESC"]];
     if (sort === "salary_high") order = [["salary", "DESC"]];
     if (sort === "salary_low") order = [["salary", "ASC"]];
 
-    const { count, rows: jobs } = await Job.findAndCountAll({
+    const jobs = await Job.findAll({
       where: whereClause,
       include: [
         { model: Company, as: "company", attributes: ["id", "name", "logo", "location"] },
@@ -109,8 +115,9 @@ export const getAllJobs = async (req, res) => {
       order,
       limit,
       offset,
-      distinct: true,
     });
+
+    const count = await Job.count({ where: whereClause });
 
     return res.status(200).json({
       success: true,
@@ -121,17 +128,13 @@ export const getAllJobs = async (req, res) => {
     });
   } catch (error) {
     console.error("Get All Jobs Error:", error);
-    res.status(500).json({ message: "Internal server error", success: false });
+    res.status(500).json({ message: error.message || "Internal server error", success: false });
   }
 };
 
 export const getJobById = async (req, res) => {
   try {
     const jobId = req.params.id;
-    if (!jobId || jobId === "undefined") {
-      return res.status(400).json({ message: "Invalid Job ID", success: false });
-    }
-
     const job = await Job.findByPk(jobId, {
       include: [
         { model: Company, as: "company" },
@@ -140,47 +143,66 @@ export const getJobById = async (req, res) => {
       ],
     });
 
-    if (!job) return res.status(404).json({ message: "Placement Drive not found", success: false });
+    if (!job) {
+      return res.status(404).json({ message: "Placement drive not found", success: false });
+    }
 
-    // Optional user token extraction
-    let userId = req.user?.id;
-    if (!userId) {
-      let token = req.cookies?.token;
-      if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-        token = req.headers.authorization.split(" ")[1];
-      }
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, JWT_SECRET);
-          userId = decoded?.userId;
-        } catch (e) {}
+    // Calculate match score & eligibility if auth token is attached
+    let eligibility = null;
+    let matchScore = null;
+    let skillBreakdown = [];
+
+    let authUser = null;
+    let token = req.cookies?.token;
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        authUser = await User.findByPk(decoded.userId, {
+          include: [{ model: Skill, as: "skills" }],
+        });
+      } catch (err) {
+        // Unauthenticated or expired token
       }
     }
 
-    let eligibilityData = null;
-    if (userId) {
-      const student = await User.findByPk(userId, {
-        include: [{ model: Skill, as: "skills", through: { attributes: ["proficiency"] } }],
-      });
-      if (student && student.role === "student") {
-        eligibilityData = calculateEligibilityAndMatch(student, job);
-      }
+    if (authUser && authUser.role === "student") {
+      const evalResult = calculateEligibilityAndMatch(authUser, job);
+      eligibility = evalResult.eligibility;
+      matchScore = evalResult.matchScore;
+      skillBreakdown = evalResult.skillBreakdown;
     }
 
-    return res.status(200).json({ success: true, job, eligibilityData });
+    return res.status(200).json({
+      success: true,
+      job,
+      eligibility,
+      matchScore,
+      skillBreakdown,
+    });
   } catch (error) {
-    console.error("Get Job By ID Error:", error);
+    console.error("Get Job By Id Error:", error);
     res.status(500).json({ message: "Internal server error", success: false });
   }
 };
 
-export const getRecruiterJobs = async (req, res) => {
+export const getAdminJobs = async (req, res) => {
   try {
-    const recruiterId = req.id;
+    const adminId = req.id;
+    const userRole = req.user.role;
+
+    let whereClause = {};
+    if (userRole === "recruiter") {
+      whereClause = { createdById: adminId };
+    }
+
     const jobs = await Job.findAll({
-      where: { createdById: recruiterId },
+      where: whereClause,
       include: [
-        { model: Company, as: "company" },
+        { model: Company, as: "company", attributes: ["name", "logo"] },
         { model: Application, as: "applications" },
       ],
       order: [["createdAt", "DESC"]],
@@ -188,6 +210,7 @@ export const getRecruiterJobs = async (req, res) => {
 
     return res.status(200).json({ success: true, jobs });
   } catch (error) {
+    console.error("Get Admin Jobs Error:", error);
     res.status(500).json({ message: "Internal server error", success: false });
   }
 };
