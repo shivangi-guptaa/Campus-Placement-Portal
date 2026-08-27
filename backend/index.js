@@ -36,15 +36,8 @@ app.use(cookieParser());
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (
-      origin.includes("localhost") ||
-      origin.includes("127.0.0.1") ||
-      origin.endsWith(".vercel.app") ||
-      origin === process.env.FRONTEND_URL
-    ) {
-      return callback(null, true);
-    }
-    return callback(null, true);
+    // Return exact requesting origin string to support credentials: true
+    return callback(null, origin);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
