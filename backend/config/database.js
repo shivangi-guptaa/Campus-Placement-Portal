@@ -12,13 +12,16 @@ const DB_PASS = process.env.DB_PASSWORD;
 const DB_NAME = process.env.DB_NAME || "placement_portal";
 const DB_PORT = parseInt(process.env.DB_PORT || "3306");
 
-// Use MySQL if credentials are fully configured, else fall back to SQLite
-const useMysql = !!(DB_HOST && DB_USER && DB_PASS);
+const isRender = !!(process.env.RENDER || process.env.RENDER_SERVICE_ID);
+const isLocalhostHost = !DB_HOST || DB_HOST === "127.0.0.1" || DB_HOST === "localhost" || DB_HOST.includes("Your-MySQL-Host");
+
+// On Render, if DB_HOST is localhost/127.0.0.1/placeholder, fall back to SQLite to prevent ECONNREFUSED 127.0.0.1:3306
+const useMysql = !!(DB_HOST && DB_USER && DB_PASS && !(isRender && isLocalhostHost));
 
 let sequelize;
 
 if (useMysql) {
-  console.log("[DB] MySQL credentials detected — using MySQL.");
+  console.log(`[DB] Remote MySQL credentials detected (${DB_HOST}:${DB_PORT}) — initializing MySQL connection.`);
   sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
     host: DB_HOST,
     port: DB_PORT,
@@ -28,7 +31,7 @@ if (useMysql) {
     dialectOptions: { decimalNumbers: true },
   });
 } else {
-  console.log("[DB] No MySQL credentials found — using SQLite fallback.");
+  console.log("[DB] Using SQLite embedded database (Render / local fallback).");
   sequelize = new Sequelize({
     dialect: "sqlite",
     storage: path.join(process.cwd(), "placement_portal.sqlite"),
@@ -41,9 +44,9 @@ export { sequelize };
 export const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log(`[DB] Connection established (${useMysql ? "MySQL" : "SQLite"}).`);
+    console.log(`[DB] Connection authenticated successfully (${useMysql ? "MySQL" : "SQLite"}).`);
     await sequelize.sync({ alter: true });
-    console.log("[DB] Tables synchronized successfully.");
+    console.log("[DB] Database models & tables synchronized successfully.");
   } catch (error) {
     console.error("[DB Connection Error]:", error.message);
   }
