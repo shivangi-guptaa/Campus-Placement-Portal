@@ -214,3 +214,5 @@ export const getAdminJobs = async (req, res) => {
     res.status(500).json({ message: "Internal server error", success: false });
   }
 };
+
+export const getRecruiterJobs = getAdminJobs;
