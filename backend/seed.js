@@ -125,11 +125,15 @@ export const seedData = async (isStandalone = false) => {
     }
 
     // Attach Skills to Students
-    await createdStudents[0].addSkill(skillObjs[0], { through: { proficiency: "Expert" } }); // React
-    await createdStudents[0].addSkill(skillObjs[1], { through: { proficiency: "Expert" } }); // Node.js
-    await createdStudents[0].addSkill(skillObjs[2], { through: { proficiency: "Intermediate" } }); // MySQL
-    await createdStudents[1].addSkill(skillObjs[4], { through: { proficiency: "Expert" } }); // Python
-    await createdStudents[2].addSkill(skillObjs[5], { through: { proficiency: "Intermediate" } }); // Java
+    try {
+      await createdStudents[0].addSkill(skillObjs[0], { through: { proficiency: "Expert" } }); // React
+      await createdStudents[0].addSkill(skillObjs[1], { through: { proficiency: "Expert" } }); // Node.js
+      await createdStudents[0].addSkill(skillObjs[2], { through: { proficiency: "Intermediate" } }); // MySQL
+      await createdStudents[1].addSkill(skillObjs[4], { through: { proficiency: "Expert" } }); // Python
+      await createdStudents[2].addSkill(skillObjs[5], { through: { proficiency: "Intermediate" } }); // Java
+    } catch (sErr) {
+      // Ignore if skills already linked
+    }
 
     // 3. Create Companies
     const companiesData = [
@@ -268,22 +272,30 @@ export const seedData = async (isStandalone = false) => {
       for (const skName of skillsToAttach) {
         const sk = skillObjs.find((s) => s.name === skName);
         if (sk) {
-          await JobSkill.findOrCreate({
-            where: { jobId: driveObj.id, skillId: sk.id },
-            defaults: { isPrimary: true },
-          });
+          try {
+            await JobSkill.findOrCreate({
+              where: { jobId: driveObj.id, skillId: sk.id },
+              defaults: { isPrimary: true },
+            });
+          } catch (skAttachErr) {
+            // Ignore if junction row exists
+          }
         }
       }
 
-      // Seed applications
+      // Seed applications safely
       for (const stud of createdStudents.slice(0, 3)) {
-        await Application.findOrCreate({
-          where: { jobId: driveObj.id, applicantId: stud.id },
-          defaults: {
-            status: "shortlisted",
-            coverLetter: "Extremely excited about this opportunity! I have strong proficiency in React and Node.js.",
-          },
-        });
+        try {
+          await Application.findOrCreate({
+            where: { jobId: driveObj.id, applicantId: stud.id },
+            defaults: {
+              status: "shortlisted",
+              coverLetter: "Extremely excited about this opportunity! I have strong proficiency in React and Node.js.",
+            },
+          });
+        } catch (appErr) {
+          // Ignore duplicate application seed error
+        }
       }
     }
 
