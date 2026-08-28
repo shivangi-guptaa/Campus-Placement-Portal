@@ -51,6 +51,8 @@ const Register = () => {
     setInputData({ ...inputData, file: e.target.files?.[0] });
   };
 
+  const [demoOtp, setDemoOtp] = useState("");
+
   const submitHandler = async (e) => {
     e.preventDefault();
     if (!agreedTerms) {
@@ -82,6 +84,10 @@ const Register = () => {
       if (res.data.success) {
         toast.success(res.data.message);
         setRegisteredEmail(inputData.email);
+        if (res.data.demoOtp) {
+          setDemoOtp(res.data.demoOtp);
+          setOtpCode(res.data.demoOtp);
+        }
         setShowOtpModal(true);
       }
     } catch (error) {
@@ -128,6 +134,10 @@ const Register = () => {
 
       if (res.data.success) {
         toast.success(res.data.message);
+        if (res.data.demoOtp) {
+          setDemoOtp(res.data.demoOtp);
+          setOtpCode(res.data.demoOtp);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -154,6 +164,11 @@ const Register = () => {
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 A 6-digit verification OTP has been sent to <span className="font-bold text-purple-600">{registeredEmail}</span>
               </p>
+              {demoOtp && (
+                <div className="mt-2 p-2.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-bold">
+                  Demo Code: <span className="text-sm font-mono tracking-widest text-emerald-900 dark:text-emerald-200">{demoOtp}</span> (Auto-filled)
+                </div>
+              )}
             </div>
 
             <form onSubmit={handleVerifyRegistrationOtp} className="space-y-4 pt-1">
