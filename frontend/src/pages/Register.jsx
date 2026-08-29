@@ -9,7 +9,7 @@ import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
-import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, CheckCircle2, Circle, FileText, X, PartyPopper, RefreshCw } from "lucide-react";
+import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, FileText } from "lucide-react";
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -21,27 +21,10 @@ const Register = () => {
     file: null,
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [agreedTerms, setAgreedTerms] = useState(false);
-  const [showRulesModal, setShowRulesModal] = useState(false);
-  
-  // Verification OTP Modal state
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
-  const [resendingOtp, setResendingOtp] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading } = useSelector((store) => store.auth);
-
-  const pwd = inputData.password;
-  const passRules = {
-    length: pwd.length >= 8,
-    upper: /[A-Z]/.test(pwd),
-    lower: /[a-z]/.test(pwd),
-    number: /[0-9]/.test(pwd),
-  };
 
   const changeEventHandler = (e) => {
     setInputData({ ...inputData, [e.target.name]: e.target.value });
@@ -51,16 +34,16 @@ const Register = () => {
     setInputData({ ...inputData, file: e.target.files?.[0] });
   };
 
-  const [demoOtp, setDemoOtp] = useState("");
-
   const submitHandler = async (e) => {
     e.preventDefault();
-    if (!agreedTerms) {
-      toast.error("Please accept the Campus Placement Rules & Code of Conduct to register");
+
+    if (!inputData.fullName || !inputData.email || !inputData.phoneNumber || !inputData.password) {
+      toast.error("Please fill in all required fields");
       return;
     }
-    if (!passRules.length || !passRules.upper || !passRules.lower || !passRules.number) {
-      toast.error("Please ensure your password meets all strength criteria");
+
+    if (inputData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long");
       return;
     }
 
@@ -82,180 +65,20 @@ const Register = () => {
       });
 
       if (res.data.success) {
-        toast.success(res.data.message);
-        setRegisteredEmail(inputData.email);
-        if (res.data.demoOtp) {
-          setDemoOtp(res.data.demoOtp);
-          setOtpCode(res.data.demoOtp);
-        }
-        setShowOtpModal(true);
-      }
-    } catch (error) {
-      console.log("Error in Register", error);
-      toast.error(error?.response?.data?.message || "Registration failed");
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
-
-  const handleVerifyRegistrationOtp = async (e) => {
-    e.preventDefault();
-    if (!otpCode || otpCode.length < 6) {
-      toast.error("Please enter the 6-digit verification OTP code");
-      return;
-    }
-
-    try {
-      setVerifyingOtp(true);
-      const res = await axios.post(`${USER_API_END_POINT}/verify-registration-otp`, {
-        email: registeredEmail,
-        otp: otpCode,
-      });
-
-      if (res.data.success) {
-        toast.success(res.data.message);
-        setShowOtpModal(false);
+        toast.success(res.data.message || "Account created successfully! Please sign in.");
         navigate("/login");
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message || "Invalid OTP verification code");
+      console.log("Error in Register", error);
+      toast.error(error?.response?.data?.message || "Registration failed. Please try again.");
     } finally {
-      setVerifyingOtp(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    try {
-      setResendingOtp(true);
-      const res = await axios.post(`${USER_API_END_POINT}/resend-registration-otp`, {
-        email: registeredEmail,
-      });
-
-      if (res.data.success) {
-        toast.success(res.data.message);
-        if (res.data.demoOtp) {
-          setDemoOtp(res.data.demoOtp);
-          setOtpCode(res.data.demoOtp);
-        }
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message || "Failed to resend OTP");
-    } finally {
-      setResendingOtp(false);
+      dispatch(setLoading(false));
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors pb-12">
       <Navbar />
-
-      {/* Account Verification OTP Modal */}
-      {showOtpModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative space-y-4 text-center">
-            {/* Close Modal Button */}
-            <button
-              type="button"
-              onClick={() => setShowOtpModal(false)}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-white p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 transition-colors"
-              title="Close Verification"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="mx-auto w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-              <PartyPopper className="w-6 h-6" />
-            </div>
-
-            <div>
-              <h3 className="font-extrabold text-xl text-gray-900 dark:text-white">Verify Your Email Address</h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                A 6-digit verification OTP has been sent to <span className="font-bold text-purple-600">{registeredEmail}</span>
-              </p>
-              {demoOtp && (
-                <div className="mt-2 p-2.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-bold">
-                  Demo Code: <span className="text-sm font-mono tracking-widest text-emerald-900 dark:text-emerald-200">{demoOtp}</span> (Auto-filled)
-                </div>
-              )}
-            </div>
-
-            <form onSubmit={handleVerifyRegistrationOtp} className="space-y-4 pt-1">
-              <div className="space-y-1 text-left">
-                <Label className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5" /> 6-Digit Verification OTP Code*
-                </Label>
-                <Input
-                  type="text"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
-                  placeholder="• • • • • •"
-                  maxLength={6}
-                  className="dark:bg-gray-800 dark:border-gray-700 dark:text-white font-mono tracking-widest text-center text-lg font-bold rounded-xl border-purple-500"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-xs pt-1">
-                <span className="text-gray-500 dark:text-gray-400">Didn't receive code?</span>
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={resendingOtp}
-                  className="font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  {resendingOtp ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                  Resend OTP
-                </button>
-              </div>
-
-              {verifyingOtp ? (
-                <Button disabled className="w-full bg-[#6A38C2] text-white rounded-xl">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying Account...
-                </Button>
-              ) : (
-                <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5B30A6] text-white font-bold rounded-xl">
-                  Verify Account & Sign In
-                </Button>
-              )}
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Rules Modal */}
-      {showRulesModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative space-y-4">
-            <button
-              onClick={() => setShowRulesModal(false)}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-full bg-gray-100 dark:bg-gray-800"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 font-black text-xl">
-              <ShieldCheck className="w-6 h-6" /> Campus Placement Rules & Code of Conduct
-            </div>
-            <div className="space-y-3 text-xs text-gray-600 dark:text-gray-300 leading-relaxed max-h-96 overflow-y-auto pr-2">
-              <p className="font-bold text-gray-900 dark:text-white">1. One Student, One Job Policy:</p>
-              <p>Once a candidate receives a formal job offer (FTE or PPO) with salary &gt;= 8 LPA, they are considered placed and deregistered from subsequent drives.</p>
-              
-              <p className="font-bold text-gray-900 dark:text-white">2. Mandatory PPT & OA Attendance:</p>
-              <p>Candidates registering for a drive must attend the Pre-Placement Talk (PPT) and Online Assessment (OA). Unexcused absence leads to a 30-day drive suspension.</p>
-              
-              <p className="font-bold text-gray-900 dark:text-white">3. Zero Plagiarism Policy:</p>
-              <p>Strict anti-cheating & proctoring protocols during coding tests. Violations result in permanent portal expulsion.</p>
-              
-              <p className="font-bold text-gray-900 dark:text-white">4. Offer Letter Acceptance:</p>
-              <p>Selected candidates must submit their formal acceptance within 7 days of offer release.</p>
-            </div>
-            <Button onClick={() => setShowRulesModal(false)} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl">
-              I Understand & Agree
-            </Button>
-          </div>
-        </div>
-      )}
 
       <div className="flex items-center justify-center max-w-7xl mx-auto px-4 mt-8">
         <form
@@ -324,7 +147,7 @@ const Register = () => {
                 value={inputData.password}
                 name="password"
                 onChange={changeEventHandler}
-                placeholder="••••••••"
+                placeholder="At least 6 characters"
                 className="dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-500 rounded-xl pr-10"
                 required
               />
@@ -338,34 +161,10 @@ const Register = () => {
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 space-y-2 text-xs">
-            <span className="font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider block text-[10px]">
-              PASSWORD MUST CONTAIN:
-            </span>
-            <div className="grid grid-cols-1 gap-1.5 font-medium">
-              <div className={`flex items-center gap-2 ${passRules.length ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-gray-500 dark:text-gray-400"}`}>
-                {passRules.length ? <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-100" /> : <Circle className="w-4 h-4 text-gray-400" />}
-                <span>At least 8 characters</span>
-              </div>
-              <div className={`flex items-center gap-2 ${passRules.upper ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-gray-500 dark:text-gray-400"}`}>
-                {passRules.upper ? <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-100" /> : <Circle className="w-4 h-4 text-gray-400" />}
-                <span>One uppercase letter (A-Z)</span>
-              </div>
-              <div className={`flex items-center gap-2 ${passRules.lower ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-gray-500 dark:text-gray-400"}`}>
-                {passRules.lower ? <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-100" /> : <Circle className="w-4 h-4 text-gray-400" />}
-                <span>One lowercase letter (a-z)</span>
-              </div>
-              <div className={`flex items-center gap-2 ${passRules.number ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-gray-500 dark:text-gray-400"}`}>
-                {passRules.number ? <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-100" /> : <Circle className="w-4 h-4 text-gray-400" />}
-                <span>One number (0-9)</span>
-              </div>
-            </div>
-          </div>
-
           {inputData.role === "student" && (
             <div className="space-y-1">
               <Label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Upload Resume (PDF Only)
+                <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Upload Resume (Optional PDF)
               </Label>
               <Input
                 type="file"
@@ -435,26 +234,6 @@ const Register = () => {
                 TPO Admin
               </label>
             </div>
-          </div>
-
-          <div className="flex items-start gap-2 pt-2">
-            <input
-              type="checkbox"
-              id="terms"
-              checked={agreedTerms}
-              onChange={(e) => setAgreedTerms(e.target.checked)}
-              className="w-4 h-4 mt-0.5 text-purple-600 rounded border-gray-300 focus:ring-purple-500 cursor-pointer"
-            />
-            <label htmlFor="terms" className="text-xs text-gray-600 dark:text-gray-300">
-              I agree to the{" "}
-              <button
-                type="button"
-                onClick={() => setShowRulesModal(true)}
-                className="font-bold text-purple-600 dark:text-purple-400 underline hover:text-purple-800"
-              >
-                Campus Placement Rules & Code of Conduct
-              </button>
-            </label>
           </div>
 
           {loading ? (

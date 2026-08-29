@@ -86,14 +86,16 @@ export const register = async (req, res) => {
       req,
     });
 
-    const isDelivered = emailResult && emailResult.success;
     res.status(201).json({
-      message: isDelivered
-        ? `Account created! A 6-Digit Verification OTP has been sent to ${email}`
-        : `Account created! Verification OTP: ${generatedOtp} (Entered/logged for demo)`,
+      message: "Account created successfully! Please sign in with your credentials.",
       success: true,
       email,
-      demoOtp: !isDelivered ? generatedOtp : undefined,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     console.error("Register Error:", error);
