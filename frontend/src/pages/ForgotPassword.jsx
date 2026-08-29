@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
-import { Loader2, Mail, Lock, KeyRound, ArrowLeft, Eye, EyeOff, ShieldCheck, Send } from "lucide-react";
+import { Loader2, Mail, Lock, KeyRound, ArrowLeft, Eye, EyeOff, ShieldCheck, Send, X } from "lucide-react";
 
 const ForgotPassword = () => {
   const [step, setStep] = useState(1);
@@ -93,12 +93,17 @@ const ForgotPassword = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors pb-12">
       <Navbar />
       <div className="flex items-center justify-center max-w-7xl mx-auto px-4 mt-8">
-        <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Link to="/login" className="p-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-purple-600">
-              <ArrowLeft className="w-4 h-4" />
+        <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-8 shadow-sm space-y-4 relative">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Link to="/login" className="p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-purple-600">
+                <ArrowLeft className="w-4 h-4" />
+              </Link>
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400">Back to Sign In</span>
+            </div>
+            <Link to="/login" className="p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-white" title="Close">
+              <X className="w-4 h-4" />
             </Link>
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400">Back to Sign In</span>
           </div>
 
           <div>

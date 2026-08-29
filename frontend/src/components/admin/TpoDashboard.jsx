@@ -480,8 +480,19 @@ const TpoDashboard = () => {
       {/* REJECTION REASON MODAL */}
       {rejectModalData && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <h3 className="font-black text-lg text-gray-900 dark:text-white flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 relative">
+            <button
+              type="button"
+              onClick={() => {
+                setRejectModalData(null);
+                setRejectionReason("");
+              }}
+              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-white p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 transition-colors"
+              title="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <h3 className="font-black text-lg text-gray-900 dark:text-white flex items-center gap-2 pr-8">
               <AlertTriangle className="w-5 h-5 text-red-500" /> Reject {rejectModalData.name}
             </h3>
             <p className="text-xs text-gray-500">Please provide a clear official reason for rejection:</p>
