@@ -179,7 +179,11 @@ export const login = async (req, res) => {
     }
 
     if (user.role !== role) {
-      return res.status(400).json({ message: `Account does not exist for role '${role}'`, success: false });
+      if ((user.role === "tpo_admin" || user.role === "admin") && (role === "tpo_admin" || role === "admin")) {
+        // Valid admin match
+      } else {
+        return res.status(400).json({ message: `Account does not exist for role '${role}'`, success: false });
+      }
     }
 
     const accessToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });

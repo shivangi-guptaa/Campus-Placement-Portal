@@ -155,6 +155,16 @@ const Register = () => {
       {showOtpModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative space-y-4 text-center">
+            {/* Close Modal Button */}
+            <button
+              type="button"
+              onClick={() => setShowOtpModal(false)}
+              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-white p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 transition-colors"
+              title="Close Verification"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
             <div className="mx-auto w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center">
               <PartyPopper className="w-6 h-6" />
             </div>
@@ -370,11 +380,11 @@ const Register = () => {
             <Label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Select Role
             </Label>
-            <div className="grid grid-cols-2 gap-3 pt-1">
+            <div className="grid grid-cols-3 gap-2 pt-1">
               <label
-                className={`flex items-center justify-center p-3 rounded-xl border text-sm font-semibold cursor-pointer transition-all ${
+                className={`flex items-center justify-center p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
                   inputData.role === "student"
-                    ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500"
+                    ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500 shadow-sm"
                     : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
                 }`}
               >
@@ -390,9 +400,9 @@ const Register = () => {
               </label>
 
               <label
-                className={`flex items-center justify-center p-3 rounded-xl border text-sm font-semibold cursor-pointer transition-all ${
+                className={`flex items-center justify-center p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
                   inputData.role === "recruiter"
-                    ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500"
+                    ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500 shadow-sm"
                     : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
                 }`}
               >
@@ -405,6 +415,24 @@ const Register = () => {
                   className="hidden"
                 />
                 Recruiter
+              </label>
+
+              <label
+                className={`flex items-center justify-center p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                  inputData.role === "tpo_admin"
+                    ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500 shadow-sm"
+                    : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="role"
+                  value="tpo_admin"
+                  checked={inputData.role === "tpo_admin"}
+                  onChange={changeEventHandler}
+                  className="hidden"
+                />
+                TPO Admin
               </label>
             </div>
           </div>
