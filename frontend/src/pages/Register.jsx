@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import Navbar from "../components/shared/Navbar";
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading } from "@/redux/authSlice";
+import { setLoading, setUser } from "@/redux/authSlice";
 import { Loader2, User, Mail, Phone, Lock, ShieldCheck, Eye, EyeOff, FileText } from "lucide-react";
 
 const Register = () => {
@@ -32,6 +32,26 @@ const Register = () => {
 
   const changeFileHandler = (e) => {
     setInputData({ ...inputData, file: e.target.files?.[0] });
+  };
+
+  // Auto-login using credentials already entered on register form
+  const autoLogin = async (email, password, role) => {
+    try {
+      const res = await axios.post(
+        `${USER_API_END_POINT}/login`,
+        { email, password, role },
+        { headers: { "Content-Type": "application/json" }, withCredentials: true }
+      );
+      if (res.data.success) {
+        if (res.data.token) localStorage.setItem("token", res.data.token);
+        dispatch(setUser(res.data.user));
+        navigate("/");
+        toast.success(`Welcome back, ${res.data.user?.fullName || "User"}! 👋`);
+      }
+    } catch {
+      toast.error("Incorrect password. Please sign in manually.");
+      navigate("/login");
+    }
   };
 
   const submitHandler = async (e) => {
@@ -72,12 +92,8 @@ const Register = () => {
       console.log("Error in Register", error);
       const isAlready = error?.response?.data?.alreadyExists;
       if (isAlready) {
-        toast("Account already exists, logging you in...", {
-          icon: "ℹ️",
-        });
-        setTimeout(() => {
-          navigate("/login");
-        }, 1500);
+        toast("Account already exists, logging you in...", { icon: "ℹ️" });
+        await autoLogin(inputData.email, inputData.password, inputData.role);
       } else {
         toast.error(error?.response?.data?.message || "Registration failed. Please try again.");
       }
@@ -89,7 +105,6 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors pb-12">
       <Navbar />
-
       <div className="flex items-center justify-center max-w-7xl mx-auto px-4 mt-8">
         <form
           onSubmit={submitHandler}
@@ -190,65 +205,36 @@ const Register = () => {
               <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /> Select Role
             </Label>
             <div className="grid grid-cols-3 gap-2 pt-1">
-              <label
-                className={`flex items-center justify-center p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                  inputData.role === "student"
-                    ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500 shadow-sm"
-                    : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="role"
-                  value="student"
-                  checked={inputData.role === "student"}
-                  onChange={changeEventHandler}
-                  className="hidden"
-                />
-                Student
-              </label>
-
-              <label
-                className={`flex items-center justify-center p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                  inputData.role === "recruiter"
-                    ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500 shadow-sm"
-                    : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="role"
-                  value="recruiter"
-                  checked={inputData.role === "recruiter"}
-                  onChange={changeEventHandler}
-                  className="hidden"
-                />
-                Recruiter
-              </label>
-
-              <label
-                className={`flex items-center justify-center p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                  inputData.role === "tpo_admin"
-                    ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500 shadow-sm"
-                    : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="role"
-                  value="tpo_admin"
-                  checked={inputData.role === "tpo_admin"}
-                  onChange={changeEventHandler}
-                  className="hidden"
-                />
-                TPO Admin
-              </label>
+              {[
+                { value: "student", label: "Student" },
+                { value: "recruiter", label: "Recruiter" },
+                { value: "tpo_admin", label: "TPO Admin" },
+              ].map(({ value, label }) => (
+                <label
+                  key={value}
+                  className={`flex items-center justify-center p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                    inputData.role === value
+                      ? "border-purple-600 bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-500 shadow-sm"
+                      : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value={value}
+                    checked={inputData.role === value}
+                    onChange={changeEventHandler}
+                    className="hidden"
+                  />
+                  {label}
+                </label>
+              ))}
             </div>
           </div>
 
           {loading ? (
             <Button disabled className="w-full bg-[#6A38C2] text-white rounded-xl">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...
             </Button>
           ) : (
             <Button type="submit" className="w-full bg-[#6A38C2] hover:bg-[#5B30A6] text-white font-semibold rounded-xl">
