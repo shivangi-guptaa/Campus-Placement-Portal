@@ -71,12 +71,15 @@ const Register = () => {
     } catch (error) {
       console.log("Error in Register", error);
       const isAlready = error?.response?.data?.alreadyExists;
-      const errMsg = error?.response?.data?.message || "Registration failed. Please try again.";
-      toast.error(errMsg);
       if (isAlready) {
+        toast("Account already exists, logging you in...", {
+          icon: "ℹ️",
+        });
         setTimeout(() => {
           navigate("/login");
         }, 1500);
+      } else {
+        toast.error(error?.response?.data?.message || "Registration failed. Please try again.");
       }
     } finally {
       dispatch(setLoading(false));
