@@ -259,12 +259,15 @@ export const sendOtp = async (req, res) => {
     });
 
     const isDelivered = emailResult && emailResult.success;
+
+    if (!isDelivered) {
+      // SMTP not configured — OTP is in server logs only
+      console.log(`[DEV] OTP for ${email}: ${generatedOtp} — configure EMAIL_USER/EMAIL_PASS in .env to send real emails`);
+    }
+
     return res.status(200).json({
-      message: isDelivered
-        ? `6-Digit Verification OTP sent to ${email}! Please check your email inbox.`
-        : `Verification OTP generated: ${generatedOtp} (Demo mode: check code)`,
+      message: `If an account exists for ${email}, a verification OTP has been sent. Please check your inbox.`,
       success: true,
-      demoOtp: !isDelivered ? generatedOtp : undefined,
     });
   } catch (error) {
     console.error("Send OTP Error:", error);

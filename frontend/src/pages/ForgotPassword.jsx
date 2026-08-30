@@ -34,13 +34,8 @@ const ForgotPassword = () => {
       const res = await axios.post(`${USER_API_END_POINT}/send-otp`, { email });
 
       if (res.data.success) {
-        toast.success(res.data.message || `6-Digit OTP sent to ${email}!`);
-        if (res.data.demoOtp) {
-          setDemoOtp(res.data.demoOtp);
-          setOtp(res.data.demoOtp);
-        } else {
-          setOtp("");
-        }
+        toast.success(`Verification OTP sent to ${email}. Please check your inbox.`);
+        setOtp("");
         setStep(2);
       }
     } catch (error) {
@@ -116,11 +111,6 @@ const ForgotPassword = () => {
                 ? "Enter your registered email to receive a 6-digit OTP"
                 : `Enter the 6-digit OTP sent to ${email}`}
             </p>
-            {step === 2 && demoOtp && (
-              <div className="mt-2 p-2.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-bold text-center">
-                Demo Mode Code: <span className="text-sm font-mono tracking-widest text-emerald-900 dark:text-emerald-200">{demoOtp}</span> (Auto-filled)
-              </div>
-            )}
           </div>
 
           {step === 1 ? (
