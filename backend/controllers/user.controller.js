@@ -28,32 +28,25 @@ export const register = async (req, res) => {
 
     let user = await User.findOne({ where: { email } });
     if (user) {
-      // Update existing record if re-registering
-      await user.update({
-        fullName,
-        phoneNumber,
-        password: hashedPassword,
-        role,
-        degree: degree || "MCA",
-        branch: branch || "Computer Science",
-        cgpa: cgpa ? parseFloat(cgpa) : 8.0,
-        batchYear: batchYear ? parseInt(batchYear) : 2026,
-        profilePhoto: photoUrl || user.profilePhoto,
-      });
-    } else {
-      user = await User.create({
-        fullName,
-        email,
-        phoneNumber,
-        password: hashedPassword,
-        role,
-        degree: degree || "MCA",
-        branch: branch || "Computer Science",
-        cgpa: cgpa ? parseFloat(cgpa) : 8.0,
-        batchYear: batchYear ? parseInt(batchYear) : 2026,
-        profilePhoto: photoUrl,
+      return res.status(400).json({
+        message: "An account already exists with this email address. Please sign in instead.",
+        success: false,
+        alreadyExists: true,
       });
     }
+
+    user = await User.create({
+      fullName,
+      email,
+      phoneNumber,
+      password: hashedPassword,
+      role,
+      degree: degree || "MCA",
+      branch: branch || "Computer Science",
+      cgpa: cgpa ? parseFloat(cgpa) : 8.0,
+      batchYear: batchYear ? parseInt(batchYear) : 2026,
+      profilePhoto: photoUrl,
+    });
 
     if (skills) {
       const skillNames = String(skills).split(",").map((s) => s.trim()).filter(Boolean);

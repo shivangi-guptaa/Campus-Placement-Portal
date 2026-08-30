@@ -70,7 +70,14 @@ const Register = () => {
       }
     } catch (error) {
       console.log("Error in Register", error);
-      toast.error(error?.response?.data?.message || "Registration failed. Please try again.");
+      const isAlready = error?.response?.data?.alreadyExists;
+      const errMsg = error?.response?.data?.message || "Registration failed. Please try again.";
+      toast.error(errMsg);
+      if (isAlready) {
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
+      }
     } finally {
       dispatch(setLoading(false));
     }
