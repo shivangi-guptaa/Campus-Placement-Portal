@@ -25,20 +25,30 @@ import {
   Settings,
   X,
   AlertTriangle,
+  GraduationCap,
+  FileText,
+  ExternalLink,
+  ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+
 
 const TpoDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // TPO Workflow States
   const [pendingCompanies, setPendingCompanies] = useState([]);
   const [pendingDrives, setPendingDrives] = useState([]);
   const [pendingResults, setPendingResults] = useState([]);
   const [policy, setPolicy] = useState(null);
+
+  // Student Profile Modal
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   // Modals
   const [showPolicyModal, setShowPolicyModal] = useState(false);
@@ -443,17 +453,22 @@ const TpoDashboard = () => {
                     <th className="p-3">Branch & Batch</th>
                     <th className="p-3">CGPA</th>
                     <th className="p-3">Placement Status</th>
+                    <th className="p-3 text-right">Profile</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y dark:divide-gray-800">
                   {registeredUsers?.map((usr) => (
-                    <tr key={usr.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                    <tr
+                      key={usr.id}
+                      className="hover:bg-purple-50/60 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+                      onClick={() => setSelectedStudent(usr)}
+                    >
                       <td className="p-3 font-bold text-gray-900 dark:text-white">{usr.fullName}</td>
-                      <td className="p-3 text-gray-700 dark:text-gray-300">{usr.email}</td>
+                      <td className="p-3 text-gray-700 dark:text-gray-300 text-xs">{usr.email}</td>
                       <td className="p-3">
                         <Badge className="capitalize text-[10px] font-bold">{usr.role}</Badge>
                       </td>
-                      <td className="p-3 text-gray-700 dark:text-gray-300">
+                      <td className="p-3 text-gray-700 dark:text-gray-300 text-xs">
                         {usr.branch || "Computer Science"} ({usr.batchYear || 2026})
                       </td>
                       <td className="p-3 font-bold text-purple-600">{usr.cgpa || "8.0"}</td>
@@ -468,6 +483,14 @@ const TpoDashboard = () => {
                           {usr.placementStatus || "NOT_PLACED"}
                         </Badge>
                       </td>
+                      <td className="p-3 text-right">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedStudent(usr); }}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline"
+                        >
+                          View <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -476,6 +499,124 @@ const TpoDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* STUDENT PROFILE MODAL */}
+      {selectedStudent && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setSelectedStudent(null)}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4 relative max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close */}
+            <button
+              onClick={() => setSelectedStudent(null)}
+              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-white p-1.5 rounded-full bg-gray-100 dark:bg-gray-800"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-4 pr-8">
+              <img
+                src={selectedStudent.profilePhoto || "https://github.com/shadcn.png"}
+                alt={selectedStudent.fullName}
+                className="w-16 h-16 rounded-2xl object-cover border-2 border-purple-200 dark:border-purple-800"
+              />
+              <div>
+                <h3 className="font-black text-xl text-gray-900 dark:text-white">{selectedStudent.fullName}</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{selectedStudent.email}</p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <Badge className="capitalize text-[10px] font-bold">{selectedStudent.role}</Badge>
+                  <Badge className={`text-[10px] font-black uppercase ${
+                    selectedStudent.placementStatus === "PLACED" || selectedStudent.placementStatus === "MULTIPLE_OFFERS"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : selectedStudent.placementStatus === "OPTED_OUT"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-purple-100 text-purple-800"
+                  }`}>
+                    {selectedStudent.placementStatus || "NOT_PLACED"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Academic Info */}
+            <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-gray-800/60 rounded-2xl p-4 text-xs font-semibold text-gray-700 dark:text-gray-300">
+              <div className="flex items-center gap-1.5 col-span-2">
+                <GraduationCap className="w-4 h-4 text-purple-500" />
+                <span>{selectedStudent.degree || "B.Tech"} — {selectedStudent.branch || "Computer Science"}</span>
+              </div>
+              <div><span className="font-bold text-gray-500">Batch:</span> {selectedStudent.batchYear || 2026}</div>
+              <div><span className="font-bold text-gray-500">CGPA:</span> <span className="text-purple-600 font-black">{selectedStudent.cgpa ?? "N/A"}</span></div>
+              <div><span className="font-bold text-gray-500">Backlogs:</span> {selectedStudent.backlogsCount ?? 0}</div>
+              {selectedStudent.phoneNumber && (
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-gray-400" />
+                  <span>{selectedStudent.phoneNumber}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Placement Info (if placed) */}
+            {(selectedStudent.placementStatus === "PLACED" || selectedStudent.placementStatus === "MULTIPLE_OFFERS") && (
+              <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4 space-y-1 text-xs font-semibold">
+                <p className="font-black text-emerald-800 dark:text-emerald-300 text-sm">✅ Confirmed Placed</p>
+                {selectedStudent.placedCompanyName && (
+                  <p className="text-gray-700 dark:text-gray-300">Company: <span className="font-black">{selectedStudent.placedCompanyName}</span></p>
+                )}
+                {selectedStudent.currentPackage > 0 && (
+                  <p className="text-gray-700 dark:text-gray-300">Package: <span className="font-black text-emerald-700">₹{selectedStudent.currentPackage} LPA</span></p>
+                )}
+              </div>
+            )}
+
+            {/* Bio */}
+            {selectedStudent.bio && (
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase mb-1">Bio</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.bio}</p>
+              </div>
+            )}
+
+            {/* Skills */}
+            {selectedStudent.skills?.length > 0 && (
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase mb-2">Skills</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedStudent.skills.map((sk) => (
+                    <span key={sk.id} className="bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                      {sk.name}
+                      {sk.UserSkill?.proficiency && <span className="ml-1 opacity-60">· {sk.UserSkill.proficiency}</span>}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Resume */}
+            {selectedStudent.resume && (
+              <a
+                href={selectedStudent.resume}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                <FileText className="w-4 h-4" />
+                {selectedStudent.resumeOriginalName || "View Resume"} <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+
+            <div className="pt-2 border-t dark:border-gray-800">
+              <Button onClick={() => setSelectedStudent(null)} variant="outline" className="w-full rounded-xl font-bold text-xs">
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* REJECTION REASON MODAL */}
       {rejectModalData && (

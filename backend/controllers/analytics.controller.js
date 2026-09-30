@@ -21,10 +21,22 @@ export const getTpoAnalytics = async (req, res) => {
     };
 
     const registeredUsers = await User.findAll({
-      attributes: ["id", "fullName", "email", "phoneNumber", "role", "createdAt"],
+      attributes: [
+        "id", "fullName", "email", "phoneNumber", "role",
+        "branch", "cgpa", "batchYear", "backlogsCount", "degree",
+        "placementStatus", "currentPackage", "placedCompanyName", "placedDate",
+        "bio", "profilePhoto", "resume", "resumeOriginalName", "createdAt"
+      ],
+      include: [
+        {
+          model: Skill,
+          as: "skills",
+          attributes: ["id", "name"],
+          through: { attributes: ["proficiency"] },
+        },
+      ],
       order: [["createdAt", "DESC"]],
       limit: 50,
-      raw: true,
     });
 
     const topCompanyDrives = await Job.findAll({
