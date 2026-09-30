@@ -7,10 +7,10 @@ const RecruiterRoute = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user === null || user.role !== "recruiter") {
+    if (user === null || (user.role !== "recruiter" && user.role !== "tpo_admin")) {
       navigate("/");
     }
-  }, []);
+  }, [user, navigate]);
 
   return <>{children}</>;
 };
