@@ -1,6 +1,6 @@
 # 🎓 SkillSync — University Campus Placement & Internship Management System
 
-A full-stack, enterprise-grade **Campus Placement Management System** designed for universities, colleges, and training & placement cells. The system establishes the **Training & Placement Officer (TPO) as the central authority** while providing streamlined portals for **Recruiters** and **Students**.
+A full-stack **Campus Placement Management System** designed for universities, colleges, and training & placement cells. The system establishes the **Training & Placement Officer (TPO) as the central authority** while providing streamlined portals for **Recruiters** and **Students**.
 
 ---
 
