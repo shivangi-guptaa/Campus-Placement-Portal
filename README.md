@@ -48,10 +48,3 @@ A full-stack **Campus Placement Management System** designed for universities, c
 
 ---
 
-## 🧪 Security & Verification Tests
-
-Run the comprehensive 10-scenario automated verification test suite:
-```bash
-node backend/test_scenarios.js
-```
-All 10 critical security scenarios (unapproved company guard, duplicate 409 conflict, eligibility rejection, cross-recruiter isolation, placement policy enforcement, and TPO offer confirmation) pass with 100% success.
